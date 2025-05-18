@@ -1,0 +1,115 @@
+package com.ecommerce.server.controller;
+
+import com.ecommerce.server.model.dto.DireccionDto;
+import com.ecommerce.server.model.entity.Direccion;
+import com.ecommerce.server.model.payload.Mensajes;
+import com.ecommerce.server.service.IDireccionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@CrossOrigin(origins = "http://localhost:5173")
+@RestController
+@RequestMapping("/api/v1")
+public class DireccionController {
+
+    @Autowired
+    private IDireccionService direccionService;
+
+    private Mensajes msg = new Mensajes();
+
+    @GetMapping("/direcciones")
+    public ResponseEntity<?> showAll(){
+        List<Direccion> getList = direccionService.getDirecciones();
+        if (getList.isEmpty()){
+            return msg.NoGet();
+        }
+        return msg.Get(getList);
+    }
+
+    @GetMapping("/direccion/{id}")
+    public ResponseEntity<?> showById(@PathVariable Long id){
+        Direccion direccion = direccionService.getDireccion(id);
+        if (direccion == null){
+            return msg.NoGetId();
+        }
+        return msg.Get(DireccionDto.builder()
+                .id(direccion.getId())
+                .nombres(direccion.getNombres())
+                .apellidos(direccion.getApellidos())
+                .usuarioId(direccion.getUsuarioId())
+                .dni(direccion.getDni())
+                .departamento(direccion.getDepartamento())
+                .provincia(direccion.getProvincia())
+                .distrito(direccion.getDistrito())
+                .calle(direccion.getCalle())
+                .detalle(direccion.getDetalle())
+                .telefono(direccion.getTelefono())
+                .build());
+    }
+
+    @PostMapping("/direccion")
+    public ResponseEntity<?> create(@RequestBody DireccionDto direccionDto){
+        Direccion direccionSave = null ;
+        try{
+            direccionSave = direccionService.save(direccionDto);
+            return msg.Post(DireccionDto.builder()
+                    .id(direccionSave.getId())
+                    .nombres(direccionSave.getNombres())
+                    .apellidos(direccionSave.getApellidos())
+                    .usuarioId(direccionSave.getUsuarioId())
+                    .dni(direccionSave.getDni())
+                    .departamento(direccionSave.getDepartamento())
+                    .provincia(direccionSave.getProvincia())
+                    .distrito(direccionSave.getDistrito())
+                    .calle(direccionSave.getCalle())
+                    .detalle(direccionSave.getDetalle())
+                    .telefono(direccionSave.getTelefono())
+                    .build());
+        }catch (DataAccessException e){
+            return  msg.Error(e);
+        }
+    }
+
+    @PutMapping("/direccion/{id}")
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody DireccionDto direccionDto){
+        Direccion direccionUpdate = null;
+        try{
+            if (direccionService.existsById(id)){
+                direccionDto.setId(id);
+                direccionUpdate = direccionService.save(direccionDto);
+                return msg.Put(DireccionDto.builder()
+                        .id(direccionUpdate.getId())
+                        .nombres(direccionUpdate.getNombres())
+                        .apellidos(direccionUpdate.getApellidos())
+                        .usuarioId(direccionUpdate.getUsuarioId())
+                        .dni(direccionUpdate.getDni())
+                        .departamento(direccionUpdate.getDepartamento())
+                        .provincia(direccionUpdate.getProvincia())
+                        .distrito(direccionUpdate.getDistrito())
+                        .calle(direccionUpdate.getCalle())
+                        .detalle(direccionUpdate.getDetalle())
+                        .telefono(direccionUpdate.getTelefono())
+                        .build());
+            }else{
+                return msg.NoPut();
+            }
+        }catch (DataAccessException e){
+            return  msg.Error(e);
+        }
+    }
+
+    @DeleteMapping("/direccion/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id){
+        try{
+            Direccion direccion = direccionService.getDireccion(id);
+            direccionService.delete(direccion);
+            return msg.Delete(direccion);
+        }catch (DataAccessException e){
+            return  msg.Error(e);
+        }
+    }
+}
