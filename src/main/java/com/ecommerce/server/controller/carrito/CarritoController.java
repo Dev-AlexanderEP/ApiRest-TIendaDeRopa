@@ -1,6 +1,7 @@
 package com.ecommerce.server.controller.carrito;
 
 
+import com.ecommerce.server.model.dao.carrito.CarritoDao;
 import com.ecommerce.server.model.dto.carrito.CarritoDto;
 import com.ecommerce.server.model.dto.carrito.CarritoItemDto;
 import com.ecommerce.server.model.dto.carrito.CarritoRequestDto;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -22,6 +24,8 @@ public class CarritoController {
 
     @Autowired
     private ICarritoService carritoService;
+    @Autowired
+    private CarritoDao carritoDao;
 
     private Mensajes msg = new Mensajes();
 
@@ -65,6 +69,7 @@ public class CarritoController {
                 .map(item -> CarritoItemDto.builder()
                         .id(item.getId())
                         .prenda(item.getPrenda())
+                        .talla(item.getTalla())
                         .cantidad(item.getCantidad())
                         .precioUnitario(item.getPrecioUnitario())
                         .build())
@@ -81,6 +86,21 @@ public class CarritoController {
         return msg.Get(carritoDto);
     }
 
+
+    @GetMapping("/carrito/abierto/usuario/{usuarioId}")
+    public ResponseEntity<?> getCarritosAbiertosByUsuarioId(@PathVariable Long usuarioId) {
+        List<CarritoRequestDto> carritos = carritoDao.findCarritosAbiertosByUsuarioId(usuarioId);
+        if (carritos.isEmpty()) {
+            return msg.NoGet();
+        }
+        return msg.Get(carritos);
+    }
+    // GET: Obtener la cantidad de ítems distintos en un carrito por su id
+    @GetMapping("/carrito/{id}/cantidad-items")
+    public ResponseEntity<?> getCantidadItems(@PathVariable Long id) {
+        int cantidad = carritoDao.countDistinctItemsByCarritoId(id);
+        return msg.Get(cantidad);
+    }
     // POST: Crear un nuevo carrito
     @PostMapping("/carrito")
     public ResponseEntity<?> createCarrito(@RequestBody CarritoRequestDto carritoRequestDto) {
@@ -91,6 +111,7 @@ public class CarritoController {
             return msg.Error(e);
         }
     }
+
 
     // PUT: Actualizar un carrito existente
     @PutMapping("/carrito/{id}")

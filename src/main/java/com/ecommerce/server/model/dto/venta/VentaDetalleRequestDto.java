@@ -15,6 +15,7 @@ public class VentaDetalleRequestDto {
     private Long id;
     private Long ventaId;
     private Long prendaId;
+    private Long tallaId;
     private Integer cantidad;
     private Double precioUnitario;
 }

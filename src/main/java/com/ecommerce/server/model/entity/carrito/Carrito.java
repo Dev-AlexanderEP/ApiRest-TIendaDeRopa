@@ -23,7 +23,7 @@ public class Carrito {
     @Column(name = "id", unique = true, nullable = false)
     private Long id;
 
-    @Column(name = "usuario_id", nullable = false)
+    @Column(name = "usuario_id")
     private Long usuarioId;
 
     @CreationTimestamp
@@ -33,8 +33,7 @@ public class Carrito {
     @Column(name = "estado")
     private String estado;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "carrito_id") // Especifica la columna que une Carrito con CarritoItem
+    @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<CarritoItem> carritoItems = new ArrayList<>();
 }

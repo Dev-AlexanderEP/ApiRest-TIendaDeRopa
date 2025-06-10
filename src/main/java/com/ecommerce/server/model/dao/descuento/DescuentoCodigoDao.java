@@ -20,7 +20,7 @@ public interface DescuentoCodigoDao extends CrudRepository<DescuentoCodigo, Long
     void updateCodigosInactivos(LocalDate today);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT dc FROM DescuentoCodigo dc WHERE dc.codigo = :codigo")
+    @Query("SELECT dc FROM DescuentoCodigo dc WHERE dc.codigo = :codigo AND dc.activo = true")
     Optional<DescuentoCodigo> findByCodigoWithLock(String codigo);
 
 }

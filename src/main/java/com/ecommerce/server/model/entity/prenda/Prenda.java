@@ -1,5 +1,6 @@
 package com.ecommerce.server.model.entity.prenda;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -7,6 +8,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -28,16 +30,15 @@ public class Prenda {
     @Column(name = "descripcion")
     private String descripcion;
 
-    @Column(name = "imagen_url")
-    private String imagenUrl;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "imagen_id", referencedColumnName = "id")
+    private Imagen imagen;
 
     @ManyToOne()
     @JoinColumn(name = "marca_id", nullable = false)
     private Marca marca;
 
-    @ManyToOne()
-    @JoinColumn(name = "talla_id", nullable = false)
-    private Talla talla;
+
 
     @ManyToOne()
     @JoinColumn(name = "categoria_id", nullable = false)
@@ -50,8 +51,7 @@ public class Prenda {
     @Column(name = "precio", nullable = false)
     private Double precio;
 
-    @Column(name = "stock", nullable = false)
-    private Integer stock;
+
 
     @Builder.Default
     @Column(name = "activo", nullable = false)
@@ -65,5 +65,8 @@ public class Prenda {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @OneToMany(mappedBy = "prenda", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<PrendaTalla> tallas;
 
 }

@@ -33,12 +33,15 @@ public class UsuarioImplService implements IUsuarioService {
     @Transactional
     @Override
     public Usuario save(UsuarioDto usuarioDto) {
+        if (usuarioDto.getEmail() != null && usuarioDao.findByEmail(usuarioDto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Ya existe un usuario con el email: " + usuarioDto.getEmail());
+        }
         Usuario usuario = Usuario.builder()
                 .id(usuarioDto.getId())
                 .nombreUsuario(usuarioDto.getNombreUsuario())
                 .email(usuarioDto.getEmail())
                 .contrasenia(passwordEncoder.encode(usuarioDto.getContrasenia())) // encriptar aquí
-                .rol(usuarioDto.getRol())
+                .rol("USER")
                 .build();
         return usuarioDao.save(usuario);
     }

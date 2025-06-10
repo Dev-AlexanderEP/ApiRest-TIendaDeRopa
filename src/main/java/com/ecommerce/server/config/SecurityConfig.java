@@ -71,7 +71,7 @@ public class SecurityConfig {
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**","/google-login","api/v1/**").permitAll())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**","/google-login","api/v1/**","/uploads/**").permitAll())
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)

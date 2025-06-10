@@ -25,7 +25,7 @@ public class DatosPersonales {
     @Column(name = "usuario_id")
     private Long usuarioId;
 
-    @Column(name = "dni", nullable = false, length = 20, unique = true)
+    @Column(name = "dni", nullable = false, length = 20)
     private String dni;
 
     @Column(name = "departamento", nullable = false, length = 100)

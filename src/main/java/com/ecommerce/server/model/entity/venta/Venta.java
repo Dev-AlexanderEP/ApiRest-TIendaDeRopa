@@ -39,8 +39,8 @@ public class Venta {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "venta_id") // Especifica la columna que une Carrito con CarritoItem
+    // En Venta.java
+    @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<VentaDetalle> detalles = new ArrayList<>();
 }

@@ -1,5 +1,6 @@
 package com.ecommerce.server.model.dto.prenda;
 
+import com.ecommerce.server.model.entity.prenda.Imagen;
 import com.ecommerce.server.model.entity.prenda.Talla;
 import lombok.*;
 
@@ -17,7 +18,7 @@ public class PrendaDto {
     private Long id;
     private String nombre;
     private String descripcion;
-    private String imagenUrl;
+    private Imagen imagen;
     private MarcaDto marcaDto;
     private TallaDto tallaDto;
     private CategoriaDto categoriaDto;

@@ -1,5 +1,6 @@
 package com.ecommerce.server.controller;
 
+import com.ecommerce.server.model.dao.DireccionDao;
 import com.ecommerce.server.model.dto.DireccionDto;
 import com.ecommerce.server.model.entity.Direccion;
 import com.ecommerce.server.model.payload.Mensajes;
@@ -18,9 +19,23 @@ public class DireccionController {
 
     @Autowired
     private IDireccionService direccionService;
+    @Autowired
+    private DireccionDao direccionDao;
 
     private Mensajes msg = new Mensajes();
 
+    @GetMapping("/direcciones/usuario/{usuarioId}")
+    public ResponseEntity<?> getDireccionesPorUsuario(@PathVariable Long usuarioId) {
+        try {
+            List<Direccion> direcciones = direccionDao.findByUsuarioId(usuarioId);
+            if (direcciones.isEmpty()) {
+                return msg.NoGet();
+            }
+            return msg.Get(direcciones);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
+        }
+    }
     @GetMapping("/direcciones")
     public ResponseEntity<?> showAll(){
         List<Direccion> getList = direccionService.getDirecciones();

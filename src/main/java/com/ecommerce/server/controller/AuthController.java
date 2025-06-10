@@ -37,6 +37,9 @@ public class AuthController {
     private JwtEncoder jwtEncoder;
 
     @Autowired
+    private UsuarioDao usuarioDao;
+
+    @Autowired
     private JwtDecoder jwtDecoder;
 
     @Autowired()
@@ -52,11 +55,19 @@ public class AuthController {
     public ResponseEntity<Map<String, String>>  generarToken(String grantType, String username, String password, boolean withRefreshToken, String refreshToken) {
         String subject = null;
         String scope = null;
-        
+
+        String nombre = username;
         if (grantType.equals("password")) {
+            // Si es un email, busca el username correspondiente
+            if (nombre.contains("@")) {
+                Usuario usuario = usuarioDao.findByEmail(nombre)
+                        .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado con email: " ));
+                nombre = usuario.getNombreUsuario();
+            }
+
             // Autenticamos al usuario con sus datos
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
+                    new UsernamePasswordAuthenticationToken(nombre, password)
             );
 
             //Obtenemos los datos del usuario autenticado
@@ -86,7 +97,7 @@ public class AuthController {
         JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
                 .subject(subject)
                 .issuedAt(instant)
-                .expiresAt(instant.plus(withRefreshToken?1:5, ChronoUnit.MINUTES))
+                .expiresAt(instant.plus(withRefreshToken?1:5, ChronoUnit.HOURS))
                 .issuer("security-service")
                 .claim("scope", scope)
                 .build();
@@ -98,7 +109,7 @@ public class AuthController {
             JwtClaimsSet jwtClaimsSetRefresh = JwtClaimsSet.builder()
                     .subject(subject)
                     .issuedAt(instant)
-                    .expiresAt(instant.plus(5, ChronoUnit.MINUTES))
+                    .expiresAt(instant.plus(5, ChronoUnit.HOURS))
                     .issuer("security-service")
                     .claim("scope", scope)
                     .build();
@@ -110,10 +121,9 @@ public class AuthController {
     }
 
 
+// Dentro de AuthController
 
 
-    @Autowired
-    private UsuarioDao usuarioDao;
 
     @PostMapping("/google-login")
     public ResponseEntity<Map<String, String>> handleGoogleLogin(@RequestBody Map<String, String> request) {
@@ -148,7 +158,7 @@ public class AuthController {
                     usuario.setContrasenia("google-user-" + Instant.now().toString()); // Placeholder password
                     usuario.setEmail(email);
                     usuario.setNombreUsuario(name);
-                    usuario.setRol("ADMIN"); // Asignar rol por defecto
+                    usuario.setRol("USER"); // Asignar rol por defecto
                     usuario.setActivo(true);
 
                     // Guardar el nuevo Admin en la base de datos
@@ -167,7 +177,7 @@ public class AuthController {
                 JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
                         .subject(userDetails.getUsername())
                         .issuedAt(instant)
-                        .expiresAt(instant.plus(5, ChronoUnit.MINUTES))
+                        .expiresAt(instant.plus(5, ChronoUnit.HOURS))
                         .issuer("security-service")
                         .claim("scope", scope)
                         .build();
@@ -266,8 +276,11 @@ public class AuthController {
             if (username == null) {
                 throw new RuntimeException("No se encontró el nombre de usuario en los claims del token");
             }
-            return usuarioDao.findByNombreUsuario(username)
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
+            Usuario user =usuarioDao.findByNombreUsuario(username).orElse(null);
+            user.setContrasenia("");
+            return user;
+//            return usuarioDao.findByNombreUsuario(username)
+//                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado: " + username));
         } else if (principal instanceof String) {
             String username = (String) principal;
             if ("anonymousUser".equals(username)) {

@@ -5,6 +5,7 @@ import com.ecommerce.server.model.dto.pago.PagoResquestDto;
 import com.ecommerce.server.model.entity.pago.MetodoPago;
 import com.ecommerce.server.model.entity.pago.Pago;
 import com.ecommerce.server.model.entity.venta.Venta;
+import com.ecommerce.server.model.entity.venta.VentaDetalle;
 import com.ecommerce.server.service.pago.IMetodoPagoService;
 import com.ecommerce.server.service.pago.IPagoService;
 import com.ecommerce.server.service.venta.IVentaService;
@@ -37,6 +38,7 @@ public class PagoImplService implements IPagoService {
     @Override
     public Pago save(PagoResquestDto pagoResquestDto) {
         Venta venta = ventaService.getVenta(pagoResquestDto.getVentaId());
+
         MetodoPago metodoPago = metodoPagoService.getMetodoPago(pagoResquestDto.getMetodoId());
         Pago pago = Pago.builder()
                 .id(pagoResquestDto.getId())

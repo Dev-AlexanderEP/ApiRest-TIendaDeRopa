@@ -44,6 +44,8 @@ public class PrendaImplService implements IPrendaService {
 
     @Autowired
     private IProveedorService proveedorService;
+    @Autowired
+    private ImagenDao imagenDao;
 
 
     @Override
@@ -55,6 +57,8 @@ public class PrendaImplService implements IPrendaService {
     public Prenda getPrenda(Long id) {
         return prendaDao.findById(id).orElse(null);
     }
+
+
 
     @Transactional
     @Override
@@ -77,10 +81,7 @@ public class PrendaImplService implements IPrendaService {
         if (marca == null) {
             throw new IllegalArgumentException("Marca con ID " + prendaDto.getMarcaDto().getId() + " no encontrada");
         }
-        Talla talla = tallaService.getTalla(prendaDto.getTallaDto().getId());
-        if (talla == null) {
-            throw new IllegalArgumentException("Talla con ID " + prendaDto.getTallaDto().getId() + " no encontrada");
-        }
+
         Categoria categoria = categoriaService.getCategoria(prendaDto.getCategoriaDto().getId());
         if (categoria == null) {
             throw new IllegalArgumentException("Categoría con ID " + prendaDto.getCategoriaDto().getId() + " no encontrada");
@@ -89,18 +90,17 @@ public class PrendaImplService implements IPrendaService {
         if (proveedor == null) {
             throw new IllegalArgumentException("Proveedor con ID " + prendaDto.getProveedorDto().getId() + " no encontrada");
         }
-
+        Imagen imagen = imagenDao.findById(prendaDto.getImagen().getId()).orElse(null);
+        // falta poner las tallas
         Prenda prenda = Prenda.builder()
                 .id(prendaDto.getId())
                 .nombre(prendaDto.getNombre())
                 .descripcion(prendaDto.getDescripcion())
-                .imagenUrl(prendaDto.getImagenUrl())
+                .imagen(imagen)
                 .marca(marca)
-                .talla(talla)
                 .categoria(categoria)
                 .proveedor(proveedor)
                 .precio(prendaDto.getPrecio())
-                .stock(prendaDto.getStock())
                 .activo(prendaDto.getActivo())
                 .createdAt(prendaDto.getCreatedAt() != null ? prendaDto.getCreatedAt() : LocalDateTime.now())
                 .build();
@@ -118,64 +118,64 @@ public class PrendaImplService implements IPrendaService {
         return prendaDao.existsById(id);
     }
 
-    @Transactional(readOnly = true)
-    public List<PrendaConDescuentoResponseDto> obtenerPrendasConDescuentos() {
-        List<Object[]> resultados = prendaDao.findPrendasConDescuentosActivos();
-        return resultados.stream().map(result -> {
-            Prenda prenda = (Prenda) result[0];
-            Double porcentaje = (Double) result[1];
-            Boolean descuentoActivo = (Boolean) result[2];
-
-            // Manejo de posibles valores nulos en las entidades relacionadas
-            MarcaDto marcaDto = prenda.getMarca() != null
-                    ? MarcaDto.builder()
-                    .id(prenda.getMarca().getId())
-                    .nomMarca(prenda.getMarca().getNomMarca())
-                    .build()
-                    : null;
-
-            TallaDto tallaDto = prenda.getTalla() != null
-                    ? TallaDto.builder()
-                    .id(prenda.getTalla().getId())
-                    .nomTalla(prenda.getTalla().getNomTalla())
-                    .build()
-                    : null;
-
-            CategoriaDto categoriaDto = prenda.getCategoria() != null
-                    ? CategoriaDto.builder()
-                    .id(prenda.getCategoria().getId())
-                    .nomCategoria(prenda.getCategoria().getNomCategoria())
-                    .build()
-                    : null;
-
-            ProveedorDto proveedorDto = prenda.getProveedor() != null
-                    ? ProveedorDto.builder()
-                    .id(prenda.getProveedor().getId())
-                    .nomProveedor(prenda.getProveedor().getNomProveedor())
-                    .build()
-                    : null;
-
-            // Mapear Prenda a PrendaDto
-            PrendaDto prendaDto = PrendaDto.builder()
-                    .id(prenda.getId())
-                    .nombre(prenda.getNombre())
-                    .descripcion(prenda.getDescripcion())
-                    .imagenUrl(prenda.getImagenUrl())
-                    .marcaDto(marcaDto)
-                    .tallaDto(tallaDto)
-                    .categoriaDto(categoriaDto)
-                    .proveedorDto(proveedorDto)
-                    .precio(prenda.getPrecio())
-                    .stock(prenda.getStock())
-                    .activo(prenda.getActivo())
-                    .createdAt(prenda.getCreatedAt())
-                    .build();
-
-            return new PrendaConDescuentoResponseDto(
-                    prendaDto,
-                    porcentaje,
-                    descuentoActivo != null ? descuentoActivo : false
-            );
-        }).collect(Collectors.toList());
-    }
+//    @Transactional(readOnly = true)
+//    public List<PrendaConDescuentoResponseDto> obtenerPrendasConDescuentos() {
+//        List<Object[]> resultados = prendaDao.findPrendasConDescuentosActivos();
+//        return resultados.stream().map(result -> {
+//            Prenda prenda = (Prenda) result[0];
+//            Double porcentaje = (Double) result[1];
+//            Boolean descuentoActivo = (Boolean) result[2];
+//
+//            // Manejo de posibles valores nulos en las entidades relacionadas
+//            MarcaDto marcaDto = prenda.getMarca() != null
+//                    ? MarcaDto.builder()
+//                    .id(prenda.getMarca().getId())
+//                    .nomMarca(prenda.getMarca().getNomMarca())
+//                    .build()
+//                    : null;
+//
+//            TallaDto tallaDto = prenda.getTalla() != null
+//                    ? TallaDto.builder()
+//                    .id(prenda.getTalla().getId())
+//                    .nomTalla(prenda.getTalla().getNomTalla())
+//                    .build()
+//                    : null;
+//
+//            CategoriaDto categoriaDto = prenda.getCategoria() != null
+//                    ? CategoriaDto.builder()
+//                    .id(prenda.getCategoria().getId())
+//                    .nomCategoria(prenda.getCategoria().getNomCategoria())
+//                    .build()
+//                    : null;
+//
+//            ProveedorDto proveedorDto = prenda.getProveedor() != null
+//                    ? ProveedorDto.builder()
+//                    .id(prenda.getProveedor().getId())
+//                    .nomProveedor(prenda.getProveedor().getNomProveedor())
+//                    .build()
+//                    : null;
+//
+//            // Mapear Prenda a PrendaDto
+//            PrendaDto prendaDto = PrendaDto.builder()
+//                    .id(prenda.getId())
+//                    .nombre(prenda.getNombre())
+//                    .descripcion(prenda.getDescripcion())
+//                    .imagenUrl(prenda.getImagenUrl())
+//                    .marcaDto(marcaDto)
+//                    .tallaDto(tallaDto)
+//                    .categoriaDto(categoriaDto)
+//                    .proveedorDto(proveedorDto)
+//                    .precio(prenda.getPrecio())
+//                    .stock(prenda.getStock())
+//                    .activo(prenda.getActivo())
+//                    .createdAt(prenda.getCreatedAt())
+//                    .build();
+//
+//            return new PrendaConDescuentoResponseDto(
+//                    prendaDto,
+//                    porcentaje,
+//                    descuentoActivo != null ? descuentoActivo : false
+//            );
+//        }).collect(Collectors.toList());
+//    }
 }

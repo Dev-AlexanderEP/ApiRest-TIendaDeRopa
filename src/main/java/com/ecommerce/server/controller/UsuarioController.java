@@ -68,7 +68,7 @@ public class UsuarioController {
                     .nombreUsuario(usuarioSave.getNombreUsuario())
                     .email(usuarioSave.getEmail())
                     .contrasenia(passwordEncoder.encode(usuarioSave.getContrasenia())) // encriptar aquí
-                    .rol(usuarioSave.getRol())
+                    .rol("USER")
                     .build());
         }catch(DataAccessException e){
             return  msg.Error(e);

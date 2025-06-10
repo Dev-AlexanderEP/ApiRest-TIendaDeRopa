@@ -1,5 +1,6 @@
 package com.ecommerce.server.controller.venta;
 
+import com.ecommerce.server.model.dao.venta.VentaDao;
 import com.ecommerce.server.model.dto.venta.CarritoItemsxDetalles;
 import com.ecommerce.server.model.dto.venta.VentaDetalleDto;
 import com.ecommerce.server.model.dto.venta.VentaDto;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:5173")
@@ -22,9 +24,20 @@ public class VentaController {
 
     @Autowired
     private IVentaService ventaService;
+    @Autowired
+    private VentaDao ventaDao;
 
     private Mensajes msg = new Mensajes();
 
+    @GetMapping("/venta/segunda-pendiente/{usuarioId}")
+    public ResponseEntity<?> getSecondPendingVentaId(@PathVariable Long usuarioId) {
+        Optional<Long> ventaId = ventaDao.findSecondPendingVentaIdByUsuarioId(usuarioId);
+        if (ventaId.isPresent()) {
+            return msg.Get(ventaId.get());
+        } else {
+            return msg.NoGet();
+        }
+    }
     @GetMapping("/ventas")
     public ResponseEntity<?> showAll() {
         List<Venta> ventas = ventaService.getVentas();

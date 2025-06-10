@@ -13,6 +13,7 @@ import com.ecommerce.server.service.carrito.ICarritoService;
 import com.ecommerce.server.service.venta.IVentaDetalleService;
 import com.ecommerce.server.service.venta.IVentaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,7 @@ public class VentaImplService implements IVentaService {
     private ICarritoService carritoService;
 
     @Autowired
+    @Lazy
     private IVentaDetalleService ventaDetalleService;
 
     @Override
@@ -120,11 +122,13 @@ public class VentaImplService implements IVentaService {
 
         // Iterar sobre los CarritoItem y crear VentaDetalle
         for (CarritoItem item : carritoItems) {
+
             VentaDetalle detalle = VentaDetalle.builder()
                     .id(null)
-                    .ventaId(venta.getId())
+                    .venta(venta)
                     .prenda(item.getPrenda())
                     .cantidad(item.getCantidad())
+                    .talla(item.getTalla())
                     .precioUnitario(item.getPrecioUnitario()) // Precio al momento de la venta
                     .build();
             // Guardar el detalle y añadirlo a la lista
@@ -133,6 +137,7 @@ public class VentaImplService implements IVentaService {
                     .ventaId(venta.getId())
                     .prendaId(item.getPrenda().getId())
                     .cantidad(item.getCantidad())
+                    .tallaId(item.getTalla().getId())
                     .precioUnitario(item.getPrecioUnitario())
                     .build());
             detalles.add(savedDetalle);

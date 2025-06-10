@@ -13,6 +13,7 @@ public class CarritoItemRequestDto {
     private Long id; // Opcional, para actualizaciones
     private Long carritoId; // Requerido para asociar al carrito
     private Long prendaId; // O un PrendaDto
+    private String talla;
     private Integer cantidad;
     private Double precioUnitario;
 

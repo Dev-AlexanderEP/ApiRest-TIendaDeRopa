@@ -12,5 +12,4 @@ public interface IPrendaService {
     Prenda save(PrendaDto prendaDto);
     void deletePrenda(Prenda prenda);
     boolean existsById(Long id);
-    public List<PrendaConDescuentoResponseDto> obtenerPrendasConDescuentos();
 }
