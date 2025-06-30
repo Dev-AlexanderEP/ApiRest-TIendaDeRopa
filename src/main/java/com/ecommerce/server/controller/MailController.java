@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
+})
 @RestController
 @RequestMapping("/api/v1")
 public class MailController {
