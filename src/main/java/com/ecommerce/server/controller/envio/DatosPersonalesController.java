@@ -1,11 +1,17 @@
 package com.ecommerce.server.controller.envio;
 
+import com.ecommerce.server.model.dao.envio.DatosPersonalesDao;
+import com.ecommerce.server.model.dto.PageResponseDto;
 import com.ecommerce.server.model.dto.envio.DatosPersonalesDto;
 import com.ecommerce.server.model.entity.envio.DatosPersonales;
 import com.ecommerce.server.model.payload.Mensajes;
 import com.ecommerce.server.service.envio.IDatosPersonalesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +27,32 @@ public class DatosPersonalesController {
 
     private Mensajes msg = new Mensajes();
 
+    @Autowired
+    private DatosPersonalesDao datosPersonalesDao;
+
+    @GetMapping("/datos-personales/paginado")
+    public ResponseEntity<?> getDatosPersonalesPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+            Page<DatosPersonales> datos = datosPersonalesDao.findAll(pageable);
+            if (datos.isEmpty()) {
+                return msg.NoGet();
+            }
+            PageResponseDto<DatosPersonales> response = new PageResponseDto<>(
+                    datos.getContent(),
+                    datos.getNumber(),
+                    datos.getSize(),
+                    datos.getTotalElements(),
+                    datos.getTotalPages()
+            );
+            return msg.Get(response);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
+        }
+    }
     @GetMapping("/datos-personales")
     public ResponseEntity<?> showAll() {
         try {
@@ -53,6 +85,7 @@ public class DatosPersonalesController {
                     .calle(datosPersonales.getCalle())
                     .detalle(datosPersonales.getDetalle())
                     .telefono(datosPersonales.getTelefono())
+                    .email(datosPersonales.getEmail())
                     .build();
             return msg.Get(datosPersonalesDto);
         } catch (DataAccessException e) {

@@ -1,11 +1,11 @@
 package com.ecommerce.server.model.dto.prenda;
 
 import com.ecommerce.server.model.entity.prenda.Imagen;
-import com.ecommerce.server.model.entity.prenda.Talla;
+import com.ecommerce.server.model.entity.prenda.PrendaTalla;
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,17 +14,16 @@ import java.time.LocalDateTime;
 @ToString
 public class PrendaDto {
 
-
     private Long id;
     private String nombre;
     private String descripcion;
     private Imagen imagen;
-    private MarcaDto marcaDto;
-    private TallaDto tallaDto;
-    private CategoriaDto categoriaDto;
-    private ProveedorDto proveedorDto;
+    private MarcaDto marca;
+    private CategoriaDto categoria;
+    private ProveedorDto proveedor;
+    private GeneroDto genero;
     private Double precio;
-    private Integer stock;
     private Boolean activo;
     private LocalDateTime createdAt;
+    private List<PrendaTalla> tallas;
 }

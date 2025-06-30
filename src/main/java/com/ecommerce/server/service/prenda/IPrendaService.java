@@ -9,7 +9,7 @@ import java.util.List;
 public interface IPrendaService {
     List<Prenda> getPrendas();
     Prenda getPrenda(Long id);
-    Prenda save(PrendaDto prendaDto);
+    Prenda save(Prenda prendaDto);
     void deletePrenda(Prenda prenda);
     boolean existsById(Long id);
 }

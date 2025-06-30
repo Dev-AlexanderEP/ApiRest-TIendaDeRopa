@@ -41,8 +41,11 @@ public class DatosPersonales {
     private String calle;
 
     @Column(name = "detalle", nullable = false, length = 255)
-    private String detalle; // Dirección específica (calle, número, referencia)
+    private String detalle;
 
     @Column(name = "telefono", nullable = false, length = 20)
-    private String telefono; // Número de contacto para entregas
+    private String telefono;
+
+    @Column(name = "email", nullable = false, length = 100)
+    private String email;
 }

@@ -1,11 +1,17 @@
 package com.ecommerce.server.controller.prenda;
 
+import com.ecommerce.server.model.dao.prenda.CategoriaDao;
+import com.ecommerce.server.model.dto.PageResponseDto;
 import com.ecommerce.server.model.dto.prenda.CategoriaDto;
 import com.ecommerce.server.model.entity.prenda.Categoria;
 import com.ecommerce.server.model.payload.Mensajes;
 import com.ecommerce.server.service.prenda.ICategoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +26,32 @@ public class CategoriaController {
     private ICategoriaService categoriaService;
 
     private Mensajes msg = new Mensajes();
+
+    @Autowired
+    private CategoriaDao categoriaDao;
+    @GetMapping("/categorias/paginado")
+    public ResponseEntity<?> getCategoriasPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+            Page<Categoria> categorias = categoriaDao.findAll(pageable);
+            if (categorias.isEmpty()) {
+                return msg.NoGet();
+            }
+            PageResponseDto<Categoria> response = new PageResponseDto<>(
+                    categorias.getContent(),
+                    categorias.getNumber(),
+                    categorias.getSize(),
+                    categorias.getTotalElements(),
+                    categorias.getTotalPages()
+            );
+            return msg.Get(response);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
+        }
+    }
 
     @GetMapping("/categorias")
     public ResponseEntity<?> showAll(){

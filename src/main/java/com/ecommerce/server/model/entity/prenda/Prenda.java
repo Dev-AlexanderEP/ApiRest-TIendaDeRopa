@@ -6,7 +6,6 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -34,24 +33,24 @@ public class Prenda {
     @JoinColumn(name = "imagen_id", referencedColumnName = "id")
     private Imagen imagen;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "marca_id", nullable = false)
     private Marca marca;
 
-
-
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @ManyToOne()
+    @ManyToOne
     @JoinColumn(name = "proveedor_id", nullable = false)
     private Proveedor proveedor;
 
+    @ManyToOne
+    @JoinColumn(name = "genero_id", nullable = false)
+    private Genero genero;
+
     @Column(name = "precio", nullable = false)
     private Double precio;
-
-
 
     @Builder.Default
     @Column(name = "activo", nullable = false)

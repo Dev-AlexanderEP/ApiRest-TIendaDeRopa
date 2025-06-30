@@ -1,5 +1,6 @@
 package com.ecommerce.server.controller.envio;
 
+import com.ecommerce.server.model.dao.envio.EnvioDao;
 import com.ecommerce.server.model.dto.envio.EnvioDto;
 import com.ecommerce.server.model.entity.envio.Envio;
 import com.ecommerce.server.model.payload.Mensajes;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -20,6 +22,21 @@ public class EnvioController {
     private IEnvioService envioService;
 
     private Mensajes msg = new Mensajes();
+
+
+    //nuevo
+    @Autowired
+    private EnvioDao envioDao;
+
+    @GetMapping("/envio/tracking/{trackingNumber}")
+    public ResponseEntity<?> getByTrackingNumber(@PathVariable String trackingNumber) {
+        Optional<Envio> envio = envioDao.findByTrackingNumber(trackingNumber);
+        if (envio.isPresent()) {
+            return ResponseEntity.ok(envio.get());
+        } else {
+            return ResponseEntity.status(404).body("Envío no encontrado");
+        }
+    }
 
     @GetMapping("/envios")
     public ResponseEntity<?> showAll() {

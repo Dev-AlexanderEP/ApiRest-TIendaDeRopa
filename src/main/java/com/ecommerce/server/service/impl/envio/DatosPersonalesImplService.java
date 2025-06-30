@@ -28,24 +28,25 @@ public class DatosPersonalesImplService implements IDatosPersonalesService {
         return datosPersonalesDao.findById(id).orElse(null);
     }
 
-    @Override
-    public DatosPersonales save(DatosPersonalesDto datosPersonalesDto) {
-        DatosPersonales datosPersonales = DatosPersonales.builder()
-                .id(datosPersonalesDto.getId()) // Si es null, se generará automáticamente
-                .nombres(datosPersonalesDto.getNombres())
-                .apellidos(datosPersonalesDto.getApellidos())
-                .usuarioId(datosPersonalesDto.getUsuarioId())
-                .dni(datosPersonalesDto.getDni())
-                .departamento(datosPersonalesDto.getDepartamento())
-                .provincia(datosPersonalesDto.getProvincia())
-                .distrito(datosPersonalesDto.getDistrito())
-                .calle(datosPersonalesDto.getCalle())
-                .detalle(datosPersonalesDto.getDetalle())
-                .telefono(datosPersonalesDto.getTelefono())
-                .build();
+   @Override
+   public DatosPersonales save(DatosPersonalesDto datosPersonalesDto) {
+       DatosPersonales datosPersonales = DatosPersonales.builder()
+               .id(datosPersonalesDto.getId()) // Si es null, se generará automáticamente
+               .nombres(datosPersonalesDto.getNombres())
+               .apellidos(datosPersonalesDto.getApellidos())
+               .usuarioId(datosPersonalesDto.getUsuarioId())
+               .dni(datosPersonalesDto.getDni())
+               .departamento(datosPersonalesDto.getDepartamento())
+               .provincia(datosPersonalesDto.getProvincia())
+               .distrito(datosPersonalesDto.getDistrito())
+               .calle(datosPersonalesDto.getCalle())
+               .detalle(datosPersonalesDto.getDetalle())
+               .telefono(datosPersonalesDto.getTelefono())
+               .email(datosPersonalesDto.getEmail())
+               .build();
 
-        return datosPersonalesDao.save(datosPersonales);
-    }
+       return datosPersonalesDao.save(datosPersonales);
+   }
 
     @Override
     public void delete(DatosPersonales datosPersonales) {

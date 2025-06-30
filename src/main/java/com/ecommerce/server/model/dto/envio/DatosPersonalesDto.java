@@ -20,4 +20,5 @@ public class DatosPersonalesDto {
     private String calle;
     private String detalle;
     private String telefono;
+    private String email;
 }

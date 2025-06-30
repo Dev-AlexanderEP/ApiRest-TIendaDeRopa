@@ -123,8 +123,6 @@ public class AuthController {
 
 // Dentro de AuthController
 
-
-
     @PostMapping("/google-login")
     public ResponseEntity<Map<String, String>> handleGoogleLogin(@RequestBody Map<String, String> request) {
         String credential = request.get("credential");

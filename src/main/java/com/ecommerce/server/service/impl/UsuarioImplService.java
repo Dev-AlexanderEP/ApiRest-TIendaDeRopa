@@ -2,6 +2,7 @@ package com.ecommerce.server.service.impl;
 
 import com.ecommerce.server.model.dao.UsuarioDao;
 import com.ecommerce.server.model.dto.UsuarioDto;
+import com.ecommerce.server.model.dto.UsuarioUpdateDto;
 import com.ecommerce.server.model.entity.Usuario;
 import com.ecommerce.server.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,16 +34,34 @@ public class UsuarioImplService implements IUsuarioService {
     @Transactional
     @Override
     public Usuario save(UsuarioDto usuarioDto) {
-        if (usuarioDto.getEmail() != null && usuarioDao.findByEmail(usuarioDto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Ya existe un usuario con el email: " + usuarioDto.getEmail());
-        }
+
         Usuario usuario = Usuario.builder()
                 .id(usuarioDto.getId())
                 .nombreUsuario(usuarioDto.getNombreUsuario())
                 .email(usuarioDto.getEmail())
-                .contrasenia(passwordEncoder.encode(usuarioDto.getContrasenia())) // encriptar aquí
+                .contrasenia(passwordEncoder.encode(usuarioDto.getContrasenia()))
                 .rol("USER")
                 .build();
+        return usuarioDao.save(usuario);
+    }
+    @Override
+    public Usuario update(UsuarioUpdateDto usuarioUpdateDto) {
+        Usuario usuario = usuarioDao.findById(usuarioUpdateDto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + usuarioUpdateDto.getId()));
+
+        // Validar email único (excluyendo el usuario actual)
+        if (usuarioUpdateDto.getEmail() != null) {
+            var existente = usuarioDao.findByEmail(usuarioUpdateDto.getEmail());
+            if (existente.isPresent() && !existente.get().getId().equals(usuario.getId())) {
+                throw new IllegalArgumentException("Ya existe un usuario con el email: " + usuarioUpdateDto.getEmail());
+            }
+            usuario.setEmail(usuarioUpdateDto.getEmail());
+        }
+
+        usuario.setNombreUsuario(usuarioUpdateDto.getNombreUsuario());
+        usuario.setRol(usuarioUpdateDto.getRol());
+        usuario.setActivo(usuarioUpdateDto.getActivo());
+
         return usuarioDao.save(usuario);
     }
 
