@@ -29,7 +29,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
+})
 @RestController
 public class AuthController {
 
@@ -122,8 +125,6 @@ public class AuthController {
 
 
 // Dentro de AuthController
-
-
 
     @PostMapping("/google-login")
     public ResponseEntity<Map<String, String>> handleGoogleLogin(@RequestBody Map<String, String> request) {

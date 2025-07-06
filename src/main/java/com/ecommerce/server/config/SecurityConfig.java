@@ -65,13 +65,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfig.setAllowedOrigins(List.of("http://localhost:5173"));
+                    corsConfig.setAllowedOrigins(List.of(
+                        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
+                    ));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(List.of("*"));
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**","/google-login","api/v1/**","/uploads/**").permitAll())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**","/google-login","/api/v1/**","/uploads/**").permitAll())
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)

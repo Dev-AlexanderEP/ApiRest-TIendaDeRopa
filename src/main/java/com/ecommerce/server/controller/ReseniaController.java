@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+    "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
+})
 @RestController
 @RequestMapping("/api/v1")
 public class ReseniaController {

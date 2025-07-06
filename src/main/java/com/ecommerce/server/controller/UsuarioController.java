@@ -2,11 +2,16 @@ package com.ecommerce.server.controller;
 
 import com.ecommerce.server.model.dao.UsuarioDao;
 import com.ecommerce.server.model.dto.UsuarioDto;
+import com.ecommerce.server.model.dto.UsuarioUpdateDto;
 import com.ecommerce.server.model.entity.Usuario;
 import com.ecommerce.server.model.payload.Mensajes;
 import com.ecommerce.server.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -18,7 +23,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
+})
 @RestController
 @RequestMapping("/api/v1")
 public class UsuarioController {
@@ -30,6 +38,32 @@ public class UsuarioController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UsuarioDao usuarioDao;
+
+    @GetMapping("usuarios-page")
+    public ResponseEntity<Page<Usuario>> listarUsuarios(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+        Page<Usuario> usuarios = usuarioDao.findAll(pageable);
+        return ResponseEntity.ok(usuarios);
+    }
+
+    @GetMapping("/usuarios/buscar")
+    public ResponseEntity<?> buscarUsuarios(
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) String nombreUsuario,
+            @RequestParam(required = false) String email
+    ) {
+        List<Usuario> usuarios = usuarioDao.buscarPorOpciones(id, nombreUsuario, email);
+        if (usuarios.isEmpty()) {
+            return msg.NoGet();
+        }
+        return msg.Get(usuarios);
+    }
 
 //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping("/usuarios")
@@ -76,27 +110,28 @@ public class UsuarioController {
     }
 
 //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    @PutMapping("/usuario/{id}")
-    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody UsuarioDto usuarioDto) {
-        Usuario usuarioUpdate = null;
-        try{
-            if ( usuarioService.existsById(id)) {
-                usuarioDto.setId(id);
-                usuarioUpdate = usuarioService.save(usuarioDto);
-                return msg.Put(UsuarioDto.builder()
-                        .id(usuarioUpdate.getId())
-                        .nombreUsuario(usuarioUpdate.getNombreUsuario())
-                        .email(usuarioUpdate.getEmail())
-                        .contrasenia(usuarioUpdate.getContrasenia())
-                        .rol(usuarioUpdate.getRol())
-                        .build());
-            }else{
-                return msg.NoPut();
-            }
-        }catch (DataAccessException e){
-            return  msg.Error(e);
+@PutMapping("/usuario/{id}")
+public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody UsuarioUpdateDto usuarioUpdateDto) {
+    try {
+        if (usuarioService.existsById(id)) {
+            usuarioUpdateDto.setId(id);
+            Usuario usuarioUpdate = usuarioService.update(usuarioUpdateDto);
+            return msg.Put(UsuarioUpdateDto.builder()
+                    .id(usuarioUpdate.getId())
+                    .nombreUsuario(usuarioUpdate.getNombreUsuario())
+                    .email(usuarioUpdate.getEmail())
+                    .rol(usuarioUpdate.getRol())
+                    .activo(usuarioUpdate.getActivo())
+                    .build());
+        } else {
+            return msg.NoPut();
         }
+    } catch (IllegalArgumentException e) {
+        return ResponseEntity.status(409).body(e.getMessage());
+    } catch (DataAccessException e) {
+        return msg.Error(e);
     }
+}
 
 //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @DeleteMapping("/usuario/{id}")

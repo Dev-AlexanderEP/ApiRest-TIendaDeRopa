@@ -1,5 +1,7 @@
 package com.ecommerce.server.controller.prenda;
 
+import com.ecommerce.server.model.dao.prenda.TallaDao;
+import com.ecommerce.server.model.dto.PageResponseDto;
 import com.ecommerce.server.model.dto.prenda.TallaDto;
 import com.ecommerce.server.model.entity.prenda.Talla;
 import com.ecommerce.server.model.payload.Mensajes;
@@ -8,12 +10,19 @@ import org.bouncycastle.oer.its.etsi102941.TlmEntry;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
+})
 @RestController
 @RequestMapping("/api/v1")
 public class TallaController {
@@ -22,7 +31,32 @@ public class TallaController {
     private ITallaService tallaService;
 
     private Mensajes msg = new Mensajes();
+    @Autowired
+    private TallaDao tallaDao;
 
+    @GetMapping("/tallas/paginado")
+    public ResponseEntity<?> getTallasPaginado(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        try {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+            Page<Talla> tallas = tallaDao.findAll(pageable);
+            if (tallas.isEmpty()) {
+                return msg.NoGet();
+            }
+            PageResponseDto<Talla> response = new PageResponseDto<>(
+                    tallas.getContent(),
+                    tallas.getNumber(),
+                    tallas.getSize(),
+                    tallas.getTotalElements(),
+                    tallas.getTotalPages()
+            );
+            return msg.Get(response);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
+        }
+    }
 
     @GetMapping("/tallas")
     public ResponseEntity<?> showAll() {
