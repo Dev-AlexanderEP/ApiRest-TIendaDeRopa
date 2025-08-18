@@ -32,8 +32,11 @@ import java.util.List;
 @RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
 
-    @Autowired
-    private IUsuarioService usuarioService;
+    private final IUsuarioService usuarioService;
+
+    public UsuarioController(IUsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
 
     private Mensajes msg = new Mensajes();
 
@@ -43,7 +46,7 @@ public class UsuarioController {
     @Autowired
     private UsuarioDao usuarioDao;
 
-    @GetMapping("usuarios-page")
+    @GetMapping("/paginado")
     public ResponseEntity<Page<Usuario>> listarUsuarios(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -53,7 +56,7 @@ public class UsuarioController {
         return ResponseEntity.ok(usuarios);
     }
 
-    @GetMapping("/usuarios/buscar")
+    @GetMapping("/buscar")
     public ResponseEntity<?> buscarUsuarios(
             @RequestParam(required = false) Long id,
             @RequestParam(required = false) String nombreUsuario,

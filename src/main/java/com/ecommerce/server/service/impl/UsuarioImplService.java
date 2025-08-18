@@ -15,8 +15,12 @@ import java.util.List;
 @Service
 public class UsuarioImplService implements IUsuarioService {
 
-    @Autowired
-    private UsuarioDao usuarioDao;
+    private final UsuarioDao usuarioDao;
+
+    public UsuarioImplService(UsuarioDao usuarioDao) {
+        this.usuarioDao = usuarioDao;
+    }
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
