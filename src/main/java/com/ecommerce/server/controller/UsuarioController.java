@@ -29,7 +29,7 @@ import java.util.List;
         "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
 })
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/usuarios")
 public class UsuarioController {
 
     @Autowired
@@ -66,8 +66,8 @@ public class UsuarioController {
         return msg.Get(usuarios);
     }
 
-//    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    @GetMapping("/usuarios")
+    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @GetMapping
     public ResponseEntity<?> showAllUsuarios() {
         List<Usuario> getList = usuarioService.getUsuarios();
         if (getList.isEmpty()) {
@@ -76,11 +76,11 @@ public class UsuarioController {
         return msg.Get(getList);
     }
 
-//    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    @GetMapping("/usuario/{id}")
-    public ResponseEntity<?> showAdminById(@PathVariable Long id){
+    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<?> showAdminById(@PathVariable Long id) {
         Usuario usuario = usuarioService.getUsuario(id);
-        if (usuario == null){
+        if (usuario == null) {
             return msg.NoGet();
         }
         return msg.Get(UsuarioDto.builder()
@@ -92,11 +92,11 @@ public class UsuarioController {
                 .build());
     }
 
-//    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    @PostMapping("/usuario")
+    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PostMapping
     public ResponseEntity<?> create(@RequestBody UsuarioDto usuarioDto) {
-        Usuario  usuarioSave = null;
-        try{
+        Usuario usuarioSave = null;
+        try {
             usuarioSave = usuarioService.save(usuarioDto);
             return msg.Post(UsuarioDto.builder()
                     .id(usuarioSave.getId())
@@ -105,44 +105,44 @@ public class UsuarioController {
                     .contrasenia(passwordEncoder.encode(usuarioSave.getContrasenia())) // encriptar aquí
                     .rol("USER")
                     .build());
-        }catch(DataAccessException e){
-            return  msg.Error(e);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
         }
     }
 
-//    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-@PutMapping("/usuario/{id}")
-public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody UsuarioUpdateDto usuarioUpdateDto) {
-    try {
-        if (usuarioService.existsById(id)) {
-            usuarioUpdateDto.setId(id);
-            Usuario usuarioUpdate = usuarioService.update(usuarioUpdateDto);
-            return msg.Put(UsuarioUpdateDto.builder()
-                    .id(usuarioUpdate.getId())
-                    .nombreUsuario(usuarioUpdate.getNombreUsuario())
-                    .email(usuarioUpdate.getEmail())
-                    .rol(usuarioUpdate.getRol())
-                    .activo(usuarioUpdate.getActivo())
-                    .build());
-        } else {
-            return msg.NoPut();
+    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody UsuarioUpdateDto usuarioUpdateDto) {
+        try {
+            if (usuarioService.existsById(id)) {
+                usuarioUpdateDto.setId(id);
+                Usuario usuarioUpdate = usuarioService.update(usuarioUpdateDto);
+                return msg.Put(UsuarioUpdateDto.builder()
+                        .id(usuarioUpdate.getId())
+                        .nombreUsuario(usuarioUpdate.getNombreUsuario())
+                        .email(usuarioUpdate.getEmail())
+                        .rol(usuarioUpdate.getRol())
+                        .activo(usuarioUpdate.getActivo())
+                        .build());
+            } else {
+                return msg.NoPut();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(409).body(e.getMessage());
+        } catch (DataAccessException e) {
+            return msg.Error(e);
         }
-    } catch (IllegalArgumentException e) {
-        return ResponseEntity.status(409).body(e.getMessage());
-    } catch (DataAccessException e) {
-        return msg.Error(e);
     }
-}
 
-//    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-    @DeleteMapping("/usuario/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id){
-        try{
+    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+        try {
             Usuario usuarioDelete = usuarioService.getUsuario(id);
             usuarioService.deleteUsuario(usuarioDelete);
             return msg.Delete(usuarioDelete);
-        }catch (DataAccessException e){
-            return  msg.Error(e);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
         }
     }
 }
