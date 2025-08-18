@@ -3,9 +3,14 @@ package com.ecommerce.server.service.impl;
 import com.ecommerce.server.model.dao.UsuarioDao;
 import com.ecommerce.server.model.dto.UsuarioDto;
 import com.ecommerce.server.model.dto.UsuarioUpdateDto;
+import com.ecommerce.server.model.entity.PageResult;
 import com.ecommerce.server.model.entity.Usuario;
 import com.ecommerce.server.service.IUsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,9 +30,27 @@ public class UsuarioImplService implements IUsuarioService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public List<Usuario> getUsuarios() {
-        return (List) usuarioDao.findAll();
+    public PageResult<Usuario> getUsuarios(int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo - 1, 10, Sort.by("id").ascending());
+        Page<Usuario> usuariosPage = usuarioDao.findAll(pageable);
+
+        int currentPage = usuariosPage.getNumber() + 1; // Spring arranca desde 0
+        int totalPages = usuariosPage.getTotalPages();
+
+        Integer prev = (currentPage > 1) ? currentPage - 1 : null;
+        Integer next = (currentPage < totalPages) ? currentPage + 1 : null;
+
+        return new PageResult<>(
+                usuariosPage.getContent(),
+                usuariosPage.getTotalElements(),
+                totalPages,
+                currentPage,
+                prev,
+                next,
+                usuariosPage.isEmpty()
+        );
     }
+
 
     @Transactional(readOnly = true)
     @Override

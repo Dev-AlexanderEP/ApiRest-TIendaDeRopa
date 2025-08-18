@@ -3,6 +3,7 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.model.dao.UsuarioDao;
 import com.ecommerce.server.model.dto.UsuarioDto;
 import com.ecommerce.server.model.dto.UsuarioUpdateDto;
+import com.ecommerce.server.model.entity.PageResult;
 import com.ecommerce.server.model.entity.Usuario;
 import com.ecommerce.server.model.payload.Mensajes;
 import com.ecommerce.server.service.IUsuarioService;
@@ -46,16 +47,6 @@ public class UsuarioController {
     @Autowired
     private UsuarioDao usuarioDao;
 
-    @GetMapping("/paginado")
-    public ResponseEntity<Page<Usuario>> listarUsuarios(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
-        Page<Usuario> usuarios = usuarioDao.findAll(pageable);
-        return ResponseEntity.ok(usuarios);
-    }
-
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarUsuarios(
             @RequestParam(required = false) Long id,
@@ -71,11 +62,8 @@ public class UsuarioController {
 
     //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
     @GetMapping
-    public ResponseEntity<?> showAllUsuarios() {
-        List<Usuario> getList = usuarioService.getUsuarios();
-        if (getList.isEmpty()) {
-            return msg.NoGet();
-        }
+    public ResponseEntity<?> showAllUsuarios(@RequestParam(defaultValue = "1") int pageNo) {
+        PageResult<Usuario> getList = usuarioService.getUsuarios(pageNo);
         return msg.Get(getList);
     }
 
