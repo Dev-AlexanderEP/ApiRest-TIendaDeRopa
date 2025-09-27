@@ -50,4 +50,36 @@ public class MailService {
         mailSender.send(mensaje);
     }
 
+    public void enviarCodigoVerificacionHtml(
+            String destinatario,
+            String codigoVerificacion
+    ) throws Exception {
+        MimeMessage mensaje = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(mensaje, true, "UTF-8");
+
+        helper.setFrom("dev.alexander.estrada@gmail.com");
+        helper.setTo(destinatario);
+        helper.setSubject("Tu código de verificación");
+
+        // Construir el HTML del correo
+        String html = """
+            <div style="font-family:Arial,sans-serif;line-height:1.5;color:#333">
+                <h2 style="color:#7c3aed;margin:0 0 12px">Verificación de seguridad</h2>
+                <p>Usa este código para completar tu proceso de verificación:</p>
+                <div style="font-size:28px;font-weight:700;
+                            letter-spacing:6px;padding:12px 16px;
+                            border:1px solid #eee;display:inline-block;
+                            margin:16px 0;color:#000">
+                    %s
+                </div>
+                <p style="color:#666">Este código caduca en 10 minutos.<br>
+                   Si no lo solicitaste, puedes ignorar este mensaje.</p>
+            </div>
+            """.formatted(codigoVerificacion);
+
+        helper.setText(html, true); // true → HTML
+        mailSender.send(mensaje);
+    }
+
+
 }

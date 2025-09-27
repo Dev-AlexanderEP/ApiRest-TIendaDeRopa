@@ -3,8 +3,13 @@ package com.ecommerce.server.controller;
 import com.ecommerce.server.model.entity.envio.Envio;
 import com.ecommerce.server.service.MailService;
 import com.ecommerce.server.service.envio.IEnvioService;
+import com.ecommerce.server.service.forgotPass.ForgotCodeService;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = {
@@ -17,6 +22,9 @@ public class MailController {
 
     @Autowired
     private IEnvioService envioService;
+
+    @Autowired
+    private ForgotCodeService forgotCodeService;
 
     @Autowired
     private MailService mailService;
@@ -97,4 +105,25 @@ public class MailController {
 
         return ResponseEntity.ok("Correo enviado correctamente");
     }
+
+    // ---------- NUEVA RUTA ----------
+    @PostMapping("/enviar-codigo-verificacion")
+    public ResponseEntity<?> enviarCodigoVerificacion(@RequestBody @Validated CodigoRequest req) {
+        try {
+            // Implementa este método en tu MailService si aún no existe
+            mailService.enviarCodigoVerificacionHtml(req.email(), req.code());
+            forgotCodeService.saveCode(req.email(), req.code());
+            return ResponseEntity.ok().build(); // 200 sin body
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error enviando código: " + e.getMessage());
+        }
+    }
+
+    // DTO con validaciones
+    public record CodigoRequest(
+            @NotBlank @Email String email,
+            @NotBlank @Pattern(regexp = "^\\d{5}$", message = "El código debe tener 5 dígitos")
+            String code
+    ) {}
+
 }
