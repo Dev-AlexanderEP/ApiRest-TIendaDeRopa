@@ -39,7 +39,7 @@ fi
 echo "[INFO] Actualizando desde origin/main..."
 git fetch origin --tags
 git checkout main
-git pull --rebase origin main
+git pull origin main
 
 # 5) Restaurar stash si había cambios
 if [ "${STASH_CREATED}" -eq 1 ]; then
