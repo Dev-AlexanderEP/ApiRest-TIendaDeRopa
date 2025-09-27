@@ -28,7 +28,7 @@ import java.util.List;
         "*"
 })
 @RestController
-@RequestMapping("/api/v1/usuarios")
+@RequestMapping("/api/v1/usuarios1")
 public class UsuarioController {
 
     private final IUsuarioService usuarioService;
