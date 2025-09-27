@@ -18,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.OAuth2AuthenticatedPrincipal;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.web.bind.annotation.*;
@@ -29,10 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-@CrossOrigin(origins = {
-        "http://localhost:5173",
-        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe"
-})
+@CrossOrigin(origins = "*")
 @RestController
 public class AuthController {
 
@@ -53,6 +51,10 @@ public class AuthController {
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     @PostMapping("/token")
     public ResponseEntity<Map<String, String>>  generarToken(String grantType, String username, String password, boolean withRefreshToken, String refreshToken) {
@@ -126,81 +128,81 @@ public class AuthController {
 
 // Dentro de AuthController
 
-    @PostMapping("/google-login")
-    public ResponseEntity<Map<String, String>> handleGoogleLogin(@RequestBody Map<String, String> request) {
-        String credential = request.get("credential");
-        String clientId = request.get("clientId");
+        @PostMapping("/google-login")
+        public ResponseEntity<Map<String, String>> handleGoogleLogin(@RequestBody Map<String, String> request) {
+            String credential = request.get("credential");
+            String clientId = request.get("clientId");
 
-        try {
-            // Configurar el verificador de tokens de Google
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance())
-                    .setAudience(Collections.singletonList(clientId))
-                    .build();
-
-            // Verificar el token
-            GoogleIdToken idToken = verifier.verify(credential);
-            if (idToken != null) {
-                GoogleIdToken.Payload payload = idToken.getPayload();
-
-                // Extraer datos del usuario
-                String email = payload.getEmail();
-                String name = (String) payload.get("name");
-
-                // Buscar el usuario en la base de datos por email
-                UserDetails userDetails;
-                try {
-                    userDetails = customUserDetailsService.loadUserByEmail(email);
-                } catch (UsernameNotFoundException e) {
-                    // Generar un nombre de usuario a partir del email (parte antes de @)
-                    String username = name;
-                    // Crear un nuevo Admin
-                    Usuario usuario = new Usuario();
-                    usuario.setNombreUsuario(username);
-                    usuario.setContrasenia("google-user-" + Instant.now().toString()); // Placeholder password
-                    usuario.setEmail(email);
-                    usuario.setNombreUsuario(name);
-                    usuario.setRol("USER"); // Asignar rol por defecto
-                    usuario.setActivo(true);
-
-                    // Guardar el nuevo Admin en la base de datos
-                    usuarioDao.save(usuario);
-
-                    // Volver a cargar los detalles del usuario recién creado
-                    userDetails = customUserDetailsService.loadUserByEmail(email);
-                }
-
-                // Generar token JWT personalizado
-                String scope = userDetails.getAuthorities()
-                        .stream().map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.joining(" "));
-
-                Instant instant = Instant.now();
-                JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
-                        .subject(userDetails.getUsername())
-                        .issuedAt(instant)
-                        .expiresAt(instant.plus(5, ChronoUnit.HOURS))
-                        .issuer("security-service")
-                        .claim("scope", scope)
+            try {
+                // Configurar el verificador de tokens de Google
+                GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance())
+                        .setAudience(Collections.singletonList(clientId))
                         .build();
 
-                String jwtAccessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+                // Verificar el token
+                GoogleIdToken idToken = verifier.verify(credential);
+                if (idToken != null) {
+                    GoogleIdToken.Payload payload = idToken.getPayload();
 
-                // Preparar respuesta
-                Map<String, String> response = new HashMap<>();
-                response.put("accessToken", jwtAccessToken);
-                response.put("email", email);
-                response.put("name", name);
-                response.put("username", userDetails.getUsername());
-                response.put("roles", scope);
+                    // Extraer datos del usuario
+                    String email = payload.getEmail();
+                    String name = (String) payload.get("name");
 
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(Map.of("error", "Invalid Google token"), HttpStatus.UNAUTHORIZED);
+                    // Buscar el usuario en la base de datos por email
+                    UserDetails userDetails;
+                    try {
+                        userDetails = customUserDetailsService.loadUserByEmail(email);
+                    } catch (UsernameNotFoundException e) {
+                        // Generar un nombre de usuario a partir del email (parte antes de @)
+                        String username = name;
+                        // Crear un nuevo Admin
+                        Usuario usuario = new Usuario();
+                        usuario.setNombreUsuario(username);
+                        usuario.setContrasenia("google-user-" + Instant.now().toString()); // Placeholder password
+                        usuario.setEmail(email);
+                        usuario.setNombreUsuario(name);
+                        usuario.setRol("USER"); // Asignar rol por defecto
+                        usuario.setActivo(true);
+
+                        // Guardar el nuevo Admin en la base de datos
+                        usuarioDao.save(usuario);
+
+                        // Volver a cargar los detalles del usuario recién creado
+                        userDetails = customUserDetailsService.loadUserByEmail(email);
+                    }
+
+                    // Generar token JWT personalizado
+                    String scope = userDetails.getAuthorities()
+                            .stream().map(GrantedAuthority::getAuthority)
+                            .collect(Collectors.joining(" "));
+
+                    Instant instant = Instant.now();
+                    JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                            .subject(userDetails.getUsername())
+                            .issuedAt(instant)
+                            .expiresAt(instant.plus(5, ChronoUnit.HOURS))
+                            .issuer("security-service")
+                            .claim("scope", scope)
+                            .build();
+
+                    String jwtAccessToken = jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
+
+                    // Preparar respuesta
+                    Map<String, String> response = new HashMap<>();
+                    response.put("accessToken", jwtAccessToken);
+                    response.put("email", email);
+                    response.put("name", name);
+                    response.put("username", userDetails.getUsername());
+                    response.put("roles", scope);
+
+                    return new ResponseEntity<>(response, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(Map.of("error", "Invalid Google token"), HttpStatus.UNAUTHORIZED);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(Map.of("error", "Error validating Google token: " + e.getMessage()), HttpStatus.UNAUTHORIZED);
             }
-        } catch (Exception e) {
-            return new ResponseEntity<>(Map.of("error", "Error validating Google token: " + e.getMessage()), HttpStatus.UNAUTHORIZED);
         }
-    }
 
 
 
@@ -293,5 +295,6 @@ public class AuthController {
             throw new RuntimeException("Tipo de principal no soportado: " + principal.getClass().getName());
         }
     }
+
 
 }

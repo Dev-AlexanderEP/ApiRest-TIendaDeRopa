@@ -27,9 +27,8 @@ public class Usuario {
     @Column(name = "contrasenia")
     private String contrasenia;
 
-    @Builder.Default
     @Column(name = "rol")
-    private String rol = "USER";
+    private String rol;
 
     @Builder.Default
     @Column(name = "activo")

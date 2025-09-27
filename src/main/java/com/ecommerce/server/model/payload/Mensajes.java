@@ -42,7 +42,7 @@ public class Mensajes {
     }
 
     public ResponseEntity<?> Put(Object object) {
-        return mensaje(msgPut, object, HttpStatus.CREATED);
+        return mensaje(msgPut, object, HttpStatus.OK);
     }
 
     public ResponseEntity<?> NoPut() {
@@ -52,5 +52,9 @@ public class Mensajes {
     public ResponseEntity<?> Delete(Object object) {
         return  new ResponseEntity<>(object, HttpStatus.NO_CONTENT);
     }
+    public ResponseEntity<?> Deletev2() {
+        return  new ResponseEntity<>( HttpStatus.NO_CONTENT);
+    }
+
     public ResponseEntity<?> Personalizado(String Personalizado) {return mensaje(Personalizado, null, HttpStatus.OK);}
 }
