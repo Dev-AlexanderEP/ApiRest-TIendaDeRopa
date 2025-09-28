@@ -28,8 +28,8 @@ public class UsuarioSeeder {
                         .build());
 
                 usuarioRepository.save(Usuario.builder()
-                        .nombreUsuario("user2")
-                        .email("user2@example.com")
+                        .nombreUsuario("user1")
+                        .email("user1@example.com")
                         .contrasenia(passwordEncoder.encode("123456"))
                         .rol("USER")
                         .build());
