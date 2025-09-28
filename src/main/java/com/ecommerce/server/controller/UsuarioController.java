@@ -24,6 +24,7 @@ import java.util.List;
 @CrossOrigin(origins = {
         "http://localhost:5173",
         "http://localhost:4200",
+        "http://localhost:5174",
         "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
         "*"
 })
