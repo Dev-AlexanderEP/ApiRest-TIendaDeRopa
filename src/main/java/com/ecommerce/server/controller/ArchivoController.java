@@ -4,7 +4,13 @@ import com.ecommerce.server.config.ArchivoUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-@CrossOrigin(origins = "http://localhost:5174", allowCredentials = "true")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "http://localhost:4200",
+        "http://localhost:5174",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+        "*"
+})
 @RestController
 @RequestMapping("/api/v1/archivos")
 public class ArchivoController {
