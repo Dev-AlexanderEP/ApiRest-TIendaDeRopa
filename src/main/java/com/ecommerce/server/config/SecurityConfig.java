@@ -67,7 +67,8 @@ public class SecurityConfig {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     corsConfig.setAllowedOrigins(List.of(
                         "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
-                            "http://localhost:5174"  // Agregar esta línea
+                            "http://localhost:5174",  // Agregar esta línea
+                            "http://localhost:5173"
                     ));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(List.of("*"));
