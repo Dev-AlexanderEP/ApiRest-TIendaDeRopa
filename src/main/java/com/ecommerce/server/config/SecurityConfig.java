@@ -74,11 +74,10 @@ public class SecurityConfig {
                     corsConfig.setAllowCredentials(true);
                     return corsConfig;
                 }))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**","/google-login","/api/v1/**","/uploads/**").permitAll())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/token/**","/google-login","/api/v1/**", "/api/v1/archivos/**","/uploads/**").permitAll())
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
-//                .httpBasic(Customizer.withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))//                .httpBasic(Customizer.withDefaults())
 
                 .build();
     }
