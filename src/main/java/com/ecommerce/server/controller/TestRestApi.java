@@ -9,7 +9,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 @RestController
-@CrossOrigin(origins = "http://localhost:5173/")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "http://localhost:4200",
+        "http://localhost:5174",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+        "*"
+})
 public class TestRestApi {
     @GetMapping("/dataTest")
     @PreAuthorize("hasAnyAuthority('SCOPE_USER', 'SCOPE_ADMIN')")

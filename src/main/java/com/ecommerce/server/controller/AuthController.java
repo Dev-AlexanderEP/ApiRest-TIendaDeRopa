@@ -30,7 +30,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "http://localhost:4200",
+        "http://localhost:5174",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+        "*"
+})
 @RestController
 public class AuthController {
 

@@ -1,13 +1,17 @@
 package com.ecommerce.server.controller.forgotPass;
 import com.ecommerce.server.service.forgotPass.ForgotCodeService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 // controller
+@CrossOrigin(origins = {
+        "http://localhost:5173",
+        "http://localhost:4200",
+        "http://localhost:5174",
+        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+        "*"
+})
 @RestController
 @RequestMapping("/api/v1")
 public class ForgotController {
