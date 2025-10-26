@@ -76,7 +76,7 @@ public class SecurityConfig {
                     return corsConfig;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/token/**", "/google-login", "/uploads/**").permitAll()
+                        .requestMatchers("/token/**", "/google-login", "/uploads/**", "/api/v1/usuarios/create").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )

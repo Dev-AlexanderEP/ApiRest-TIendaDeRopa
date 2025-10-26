@@ -75,8 +75,7 @@ public class UsuarioController {
 
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody @Validated CreateUsuarioRequest createUsuarioRequest) {
         Usuario usuarioSave = null;
         try {
