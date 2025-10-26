@@ -1,5 +1,4 @@
 package com.ecommerce.server.model.entity;
-
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -26,18 +25,14 @@ public class Usuario {
     private String email;
     @Column(name = "contrasenia")
     private String contrasenia;
-
     @Column(name = "rol")
     private String rol;
-
     @Builder.Default
     @Column(name = "activo")
     private Boolean activo = true;
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
-
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

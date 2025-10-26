@@ -43,6 +43,7 @@ public class UsuarioController {
     @Autowired
     private UsuarioDao usuarioDao;
 
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarUsuarios(
             @RequestParam(required = false) Long id,
@@ -56,14 +57,14 @@ public class UsuarioController {
         return msg.Get(usuarios);
     }
 
-    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @GetMapping
     public ResponseEntity<?> showAllUsuarios(@RequestParam(defaultValue = "1") int pageNo) {
         PageResult<UsuarioResponse> getList = usuarioService.getUsuarios(pageNo);
         return msg.Get(getList);
     }
 
-    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> showAdminById(@PathVariable Long id) {
         Usuario usuario = usuarioService.getUsuario(id);
@@ -74,7 +75,7 @@ public class UsuarioController {
 
     }
 
-    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody @Validated CreateUsuarioRequest createUsuarioRequest) {
         Usuario usuarioSave = null;
@@ -86,8 +87,7 @@ public class UsuarioController {
         }
     }
 
-    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
-//    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody @Validated UpdatedUsuarioWebRequest updatedUsuarioWebRequest) {
         try {
@@ -101,7 +101,7 @@ public class UsuarioController {
         }
     }
 
-    //    @PreAuthorize("hasAnyAuthority('SCOPE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         try {
@@ -112,6 +112,7 @@ public class UsuarioController {
         }
     }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
     @PutMapping("/resetear-contrasenia")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPass req) {
         System.out.println("=== DEBUG /resetar-contrasenia ===");
