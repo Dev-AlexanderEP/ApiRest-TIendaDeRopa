@@ -67,7 +67,7 @@ public class SecurityConfig {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     corsConfig.setAllowedOrigins(List.of(
                         "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
-                            "http://localhost:5174",  // Agregar esta línea
+                            "http://localhost:5174",
                             "http://localhost:5173"
                     ));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -85,7 +85,7 @@ public class SecurityConfig {
                 .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()),
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 // Agregar el filtro de limitación de tasa antes del filtro de autenticación JWT 20
-                .addFilterBefore(new RateLimitFilter(), JwtAuthenticationFilter.class)
+//                .addFilterBefore(new RateLimitFilter(), JwtAuthenticationFilter.class)
                 .addFilterBefore(new SecurityHeadersFilter(), JwtAuthenticationFilter.class)
                 .build();
     }
