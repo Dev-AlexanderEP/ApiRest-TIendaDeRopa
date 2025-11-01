@@ -82,11 +82,11 @@ public class SecurityConfig {
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
+                .addFilterBefore(new SecurityHeadersFilter(), JwtAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(), JwtAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()),
                         org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 // Agregar el filtro de limitación de tasa antes del filtro de autenticación JWT 20
-                .addFilterBefore(new RateLimitFilter(), JwtAuthenticationFilter.class)
-                .addFilterBefore(new SecurityHeadersFilter(), JwtAuthenticationFilter.class)
                 .build();
     }
 
