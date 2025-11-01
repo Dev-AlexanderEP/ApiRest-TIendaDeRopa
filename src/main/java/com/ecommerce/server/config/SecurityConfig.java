@@ -12,12 +12,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +24,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.util.List;
 
@@ -40,14 +39,6 @@ public class SecurityConfig {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-
-    }
-
-    // UserDetailsService permite cargar la informacion sobre los usuarios
-    // DaoAuthenticationProvider es un rpoveedor de autenticacion que verifica usuarios y claves
     @Bean
     public AuthenticationManager authenticationManager(UserDetailsService userDetailsService) throws Exception {
         var authProvider = new DaoAuthenticationProvider();
@@ -56,8 +47,19 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
+    // Decodificar y validar tokens JWT entrantes (usan la clave publica)
+    @Bean
+    JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.getPublicKey()).build();
+    }
 
-
+    // Genera y firma los tokens JWT salientes (Clave private y publica)
+    @Bean
+    JwtEncoder jwtEncoder() {
+        JWK jwk = new RSAKey.Builder(rsaKeysConfig.getPublicKey()).privateKey(rsaKeysConfig.getPrivateKey()).build();
+        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwkSource);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -66,7 +68,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     var corsConfig = new org.springframework.web.cors.CorsConfiguration();
                     corsConfig.setAllowedOrigins(List.of(
-                        "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+                            "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
                             "http://localhost:5174",
                             "http://localhost:5173"
                     ));
@@ -81,28 +83,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())))
-                .addFilterBefore(new SecurityHeadersFilter(), JwtAuthenticationFilter.class)
-                .addFilterBefore(new RateLimitFilter(), JwtAuthenticationFilter.class)
-                .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()),
-                        org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                // Agregar el filtro de limitación de tasa antes del filtro de autenticación JWT 20
+                // Orden correcto de filtros: ANTES de UsernamePasswordAuthenticationFilter
+                .addFilterBefore(new SecurityHeadersFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
-
-
-    // Decodificar y validad tokens JWT entrantes (usan las clave publica)
-    @Bean
-    JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.getPublicKey()).build();
-    }
-
-    // Genra y firma los tokens JWT saientes (Clave private y publica)
-    @Bean
-    JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(rsaKeysConfig.getPublicKey()).privateKey(rsaKeysConfig.getPrivateKey()).build();
-        JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
-        return new NimbusJwtEncoder(jwkSource);
-    }
-
 }
