@@ -78,7 +78,9 @@ public class SecurityConfig {
                     return corsConfig;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/token/**", "/google-login", "/uploads/**", "/api/v1/usuarios/create","/api/v1/enviar-codigo-verificacion", "/api/v1/verificar-codigo").permitAll()
+                        // IMPORTANTE: Orden específico - más específico primero
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/token/**", "/google-login", "/api/v1/usuarios/create","/api/v1/enviar-codigo-verificacion", "/api/v1/verificar-codigo").permitAll()
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )
