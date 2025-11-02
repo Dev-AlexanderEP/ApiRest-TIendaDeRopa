@@ -23,6 +23,13 @@ public class IX_PrendaTallaSeeder {
             PrendaTallaDao prendaTallaDao
     ) {
         return args -> {
+
+            // ✅ Verificar si ya existen datos
+            if (prendaTallaDao.count() > 0) {
+                System.out.println("⏭️ Seeder omitido: PrendaTalla ya contiene datos.");
+                return;
+            }
+
             // Stock inicial por defecto
             final int STOCK_SUPERIOR = 10;
             final int STOCK_NUMERICO = 12;
