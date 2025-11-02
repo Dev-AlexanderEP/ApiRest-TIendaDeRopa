@@ -29,7 +29,6 @@ public class IX_PrendaTallaSeeder {
                 System.out.println("⏭️ Seeder omitido: PrendaTalla ya contiene datos.");
                 return;
             }
-
             // Stock inicial por defecto
             final int STOCK_SUPERIOR = 10;
             final int STOCK_NUMERICO = 12;

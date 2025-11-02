@@ -70,7 +70,8 @@ public class SecurityConfig {
                     corsConfig.setAllowedOrigins(List.of(
                             "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
                             "http://localhost:5174",
-                            "http://localhost:5173"
+                            "http://localhost:5173",
+                            "https://mixmatch.duckdns.org"
                     ));
                     corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                     corsConfig.setAllowedHeaders(List.of("*"));

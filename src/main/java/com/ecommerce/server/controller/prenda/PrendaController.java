@@ -200,6 +200,7 @@ public class PrendaController {
             @RequestParam(required = false) String talla,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String marca,
+            @RequestParam(required = false) String genero,
             @RequestParam(required = false) Double precioMin,
             @RequestParam(required = false) Double precioMax,
             @RequestParam(required = false) Double descMin,
@@ -207,7 +208,7 @@ public class PrendaController {
     ) {
         try {
             List<PrendaConDescuentoResponseDto> prendas = prendaDao.filtrarPrendasDinamico(
-                    talla, categoria, marca, precioMin, precioMax, descMin, descMax
+                    talla, categoria, marca,genero, precioMin, precioMax, descMin, descMax
             );
             return msg.Get(prendas);
         } catch (DataAccessException e) {
@@ -215,7 +216,7 @@ public class PrendaController {
         }
     }
     @GetMapping("/todas-prendas-filtradas")
-    public ResponseEntity<?> filtrarPrendasDinamico(
+    public ResponseEntity<?> filtrarTodasPrendasDinamico(
             @RequestParam(required = false) String talla,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String marca,

@@ -275,7 +275,11 @@ public interface PrendaDao extends CrudRepository<Prenda, Long> {
         "JOIN prenda_talla pt ON pt.prenda_id = p.id " +
         "JOIN talla t ON pt.talla_id = t.id " +
         "WHERE p.activo = true " +
-        "AND (:talla IS NULL OR t.nom_talla = :talla) " +
+        "AND (:talla IS NULL OR EXISTS (" +
+        "    SELECT 1 FROM prenda_talla pt " +
+        "    JOIN talla t ON pt.talla_id = t.id " +
+        "    WHERE pt.prenda_id = p.id AND t.nom_talla = :talla" +
+        ")) " +
         "AND (:categoria IS NULL OR c.nom_categoria = :categoria) " +
         "AND (:marca IS NULL OR m.nom_marca = :marca) " +
         "AND ((:precioMin IS NULL OR :precioMax IS NULL) OR (p.precio BETWEEN :precioMin AND :precioMax)) " +
@@ -293,7 +297,7 @@ List<PrendaConDescuentoResponseDto> filtrarPrendasDinamico(
 );
 
 
-    @Query(value = "SELECT " +
+    @Query(value = "SELECT  " +
             "p.id, " +
             "p.nombre, " +
             "p.precio, " +
@@ -316,7 +320,11 @@ List<PrendaConDescuentoResponseDto> filtrarPrendasDinamico(
             "JOIN prenda_talla pt ON pt.prenda_id = p.id " +
             "JOIN talla t ON pt.talla_id = t.id " +
             "WHERE p.activo = true " +
-            "AND (:talla IS NULL OR t.nom_talla = :talla) " +
+            "AND (:talla IS NULL OR EXISTS (" +
+            "    SELECT 1 FROM prenda_talla pt " +
+            "    JOIN talla t ON pt.talla_id = t.id " +
+            "    WHERE pt.prenda_id = p.id AND t.nom_talla = :talla" +
+            ")) " +
             "AND (:categoria IS NULL OR c.nom_categoria = :categoria) " +
             "AND (:marca IS NULL OR m.nom_marca = :marca) " +
             "AND (:genero IS NULL OR LOWER(g.nom_genero) LIKE LOWER(CONCAT('%', :genero, '%'))) " +

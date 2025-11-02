@@ -64,8 +64,9 @@ public class MailController {
 
         envio.getVenta().getDetalles().forEach(detalle -> {
             String urlImagen = detalle.getPrenda().getImagen().getPrincipal();
-            if (!urlImagen.startsWith("http")) {
-                urlImagen = "http://localhost:8080/" + urlImagen;
+            if (!urlImagen.startsWith("https")) {
+//                urlImagen = "http://localhost:8080/" + urlImagen;
+                urlImagen = "https://mixmatch.zapto.org/" + urlImagen;
             }
             resumenHtml.append("<tr>")
                     .append("<td style='border:1px solid #ccc; padding:8px; text-align:center;'>")
