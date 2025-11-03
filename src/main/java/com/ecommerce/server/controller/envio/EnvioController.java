@@ -119,6 +119,18 @@ public class EnvioController {
             return msg.Error(e);
         }
     }
+    @GetMapping("/usuario/{userId}/entregados")
+    public ResponseEntity<?> obtenerEntregadosPorUsuario(@PathVariable Long userId) {
+        try {
+            List<Envio> envios = envioService.obtenerEnviosEntregadosPorUsuario(userId);
+            if (envios == null || envios.isEmpty()) {
+                return msg.NoGet();
+            }
+            return msg.Get(envios);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
+        }
+    }
 
 
 }

@@ -14,5 +14,6 @@ public interface IEnvioService {
     void delete(Envio envio);
     boolean existsById(Long id);
     List<Envio> obtenerEnviosNoEntregadosPorUsuario(Long userId);
+    List<Envio> obtenerEnviosEntregadosPorUsuario(Long userId);
 
     }

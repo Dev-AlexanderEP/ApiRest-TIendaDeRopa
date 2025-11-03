@@ -15,5 +15,7 @@ public interface EnvioDao extends CrudRepository<Envio,Long> {
     // Opción 1: método derivado (recomendado)
     List<Envio> findByVentaUsuarioIdAndEstadoNot(Long userId, String estado);
 
+    List<Envio> findByVentaUsuarioIdAndEstado(Long userId, String estado);
+
 
 }
