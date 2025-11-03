@@ -69,4 +69,8 @@ public class EnvioImplService implements IEnvioService {
         return envioDao.existsById(id);
     }
 
+    @Override
+    public List<Envio> obtenerEnviosNoEntregadosPorUsuario(Long userId) {
+        return envioRepository.findByUsuarioIdAndEstadoNot(userId, "ENTREGADO");
+    }
 }

@@ -107,4 +107,11 @@ public class EnvioController {
         }
     }
 
+    @GetMapping("/usuario/{userId}/no-entregados")
+    public ResponseEntity<List<Envio>> obtenerNoEntregadosPorUsuario(@PathVariable Long userId) {
+        List<Envio> envios = envioService.obtenerEnviosNoEntregadosPorUsuario(userId);
+        return ResponseEntity.ok(envios);
+    }
+
+
 }

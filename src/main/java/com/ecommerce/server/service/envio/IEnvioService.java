@@ -13,4 +13,6 @@ public interface IEnvioService {
     Envio save(EnvioDto envioDto);
     void delete(Envio envio);
     boolean existsById(Long id);
-}
+    List<Envio> obtenerEnviosNoEntregadosPorUsuario(Long userId);
+
+    }
