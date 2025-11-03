@@ -11,6 +11,7 @@ import com.ecommerce.server.service.venta.IVentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
 
 import java.util.List;
 
@@ -27,7 +28,9 @@ public class EnvioImplService implements IEnvioService {
 
     @Override
     public List<Envio> getEnvios() {
-        return (List) envioDao.findAll();
+        List<Envio> list = new ArrayList<>();
+        envioDao.findAll().forEach(list::add);
+        return list;
     }
 
     @Override
