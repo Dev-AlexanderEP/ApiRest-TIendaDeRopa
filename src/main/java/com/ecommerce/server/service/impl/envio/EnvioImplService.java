@@ -72,6 +72,5 @@
 
         @Override
         public List<Envio> obtenerEnviosNoEntregadosPorUsuario(Long userId) {
-            return envioDao.findByUsuarioIdAndEstadoNot(userId, "ENTREGADO");
-        }
+            return envioDao.findByVentaUsuarioIdAndEstadoNot(userId, "ENTREGADO");        }
     }
