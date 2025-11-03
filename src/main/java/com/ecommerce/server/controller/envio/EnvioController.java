@@ -108,9 +108,13 @@ public class EnvioController {
     }
 
     @GetMapping("/usuario/{userId}/no-entregados")
-    public ResponseEntity<List<Envio>> obtenerNoEntregadosPorUsuario(@PathVariable Long userId) {
-        List<Envio> envios = envioService.obtenerEnviosNoEntregadosPorUsuario(userId);
-        return ResponseEntity.ok(envios);
+    public ResponseEntity<?> obtenerNoEntregadosPorUsuario(@PathVariable Long userId) {
+        try{
+            List<Envio> envios = envioService.obtenerEnviosNoEntregadosPorUsuario(userId);
+            return msg.Get(envio);
+        } catch (DataAccessException e) {
+            return msg.Error(e);
+        }
     }
 
 
