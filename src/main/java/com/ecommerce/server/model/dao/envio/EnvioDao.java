@@ -12,8 +12,8 @@ import java.util.Optional;
 public interface EnvioDao extends CrudRepository<Envio,Long> {
     Optional<Envio> findByTrackingNumber(String trackingNumber);
 
-    @Query("SELECT e FROM Envio e JOIN e.venta v WHERE v.usuario.id = :userId AND e.estado <> :estado")
-    List<Envio> findByUsuarioIdAndEstadoNot(@Param("userId") Long userId, @Param("estado") String estado);
+    // Opción 1: método derivado (recomendado)
+    List<Envio> findByVentaUsuarioIdAndEstadoNot(Long userId, String estado);
 
 
 }
