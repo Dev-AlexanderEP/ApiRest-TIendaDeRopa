@@ -1,45 +1,80 @@
 package com.ecommerce.server.config;
-import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
-import io.github.bucket4j.Refill;
-import jakarta.servlet.Filter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.stereotype.Component;
-import java.io.IOException;
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
-public class RateLimitFilter implements Filter {
-    private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
-    @Override
-    public void doFilter(ServletRequest request,
-                         ServletResponse response,
-                         FilterChain chain)
-            throws IOException, ServletException {
-        String ip = request.getRemoteAddr();
-        Bucket bucket = buckets.computeIfAbsent(ip, k ->
-                Bucket4j.builder()
-                        .addLimit(
-                                Bandwidth.classic(
-                                        1000, // capacidad máxima
-                                        Refill.greedy(20, Duration.ofMinutes(1)) // recarga
-                                )
-                        )
-                        .build()
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+public class RateLimitFilter extends OncePerRequestFilter {
+
+    private final ConcurrentHashMap<String, Integer> requestCounts = new ConcurrentHashMap<>();
+    private static final int MAX_REQUESTS_PER_MINUTE = 100;
+    
+    // Rutas públicas que NO tienen rate limiting estricto
+    private static final List<String> PUBLIC_PATHS = Arrays.asList(
+        "/api/v1/prendas",
+        "/api/v1/categorias",
+        "/api/v1/marcas",
+        "/api/v1/generos",
+        "/api/v1/imagenes",
+        "/api/v1/tallas",
+        "/api/v1/proveedores",
+        "/actuator/health",
+        "/uploads"
+    );
+
+    public RateLimitFilter() {
+        // Limpiar contadores cada minuto
+        Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(
+            requestCounts::clear, 
+            1, 1, TimeUnit.MINUTES
         );
-        if (bucket.tryConsume(1)) {
-            chain.doFilter(request, response);
-        } else {
-            HttpServletResponse httpResp = (HttpServletResponse) response;
-            httpResp.setStatus(429);
-            httpResp.getWriter().write("Too Many Requests");
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, 
+                                     HttpServletResponse response, 
+                                     FilterChain filterChain) throws ServletException, IOException {
+        
+        String path = request.getRequestURI();
+        
+        // ✅ Rutas públicas: rate limit muy generoso o sin límite
+        if (isPublicPath(path)) {
+            filterChain.doFilter(request, response);
+            return;
         }
+        
+        // Rate limiting solo para rutas protegidas
+        String clientIP = getClientIP(request);
+        int count = requestCounts.merge(clientIP, 1, Integer::sum);
+        
+        if (count > MAX_REQUESTS_PER_MINUTE) {
+            response.setStatus(HttpServletResponse.SC_TOO_MANY_REQUESTS);
+            response.getWriter().write("{\"error\":\"Rate limit exceeded. Try again later.\"}");
+            response.setContentType("application/json");
+            return;
+        }
+        
+        filterChain.doFilter(request, response);
+    }
+    
+    private boolean isPublicPath(String path) {
+        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    }
+    
+    private String getClientIP(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }

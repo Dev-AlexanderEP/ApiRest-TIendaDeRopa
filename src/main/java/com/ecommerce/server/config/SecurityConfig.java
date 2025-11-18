@@ -31,6 +31,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -69,7 +70,23 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
-        corsConfig.setAllowedOriginPatterns(Arrays.asList("*")); // Cambio importante
+        // ✅ Todos los orígenes permitidos (producción + desarrollo)
+        corsConfig.setAllowedOrigins(Arrays.asList(
+            // Render
+            "https://tienda-ropa-d456.onrender.com",
+            // Zapto/DuckDNS
+            "https://mixmatch.zapto.org",
+            "http://mixmatch.zapto.org",
+            "https://mixmatch.duckdns.org",
+            "http://mixmatch.duckdns.org",
+            // Elastika
+            "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+            // Desarrollo local
+            "http://localhost:5174",
+            "http://localhost:5173",
+            "http://localhost:4200",
+            "http://localhost:3000"
+        ));
         
         corsConfig.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
@@ -80,7 +97,8 @@ public class SecurityConfig {
         corsConfig.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Type",
-            "X-Total-Count"
+            "X-Total-Count",
+            "Access-Control-Allow-Origin"
         ));
         
         corsConfig.setAllowCredentials(true);
@@ -139,10 +157,10 @@ public class SecurityConfig {
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())
                     )
                 )
-                // IMPORTANTE: Comentar filtros personalizados temporalmente
-                // .addFilterBefore(new SecurityHeadersFilter(), UsernamePasswordAuthenticationFilter.class)
-                // .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
-                // .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class)
+                // ✅ Filtros mejorados que NO bloquean rutas públicas
+                .addFilterBefore(new SecurityHeadersFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new RateLimitFilter(), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                // JwtAuthenticationFilter NO es necesario, oauth2ResourceServer ya lo maneja
                 .build();
     }
 }
