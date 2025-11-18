@@ -27,8 +27,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
         "/api/v1/imagenes",
         "/api/v1/tallas",
         "/api/v1/proveedores",
+        "/api/v1/prenda-tallas",
+        "/api/v1/prenda-marcas",
+        "/api/v1/prenda-precios",
         "/actuator/health",
-        "/uploads"
+        "/uploads",
+        "/token"
     );
 
     public RateLimitFilter() {
@@ -46,7 +50,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         
         String path = request.getRequestURI();
         
-        // ✅ Rutas públicas: rate limit muy generoso o sin límite
+        // ✅ Rutas públicas: sin rate limit
         if (isPublicPath(path)) {
             filterChain.doFilter(request, response);
             return;
@@ -57,9 +61,10 @@ public class RateLimitFilter extends OncePerRequestFilter {
         int count = requestCounts.merge(clientIP, 1, Integer::sum);
         
         if (count > MAX_REQUESTS_PER_MINUTE) {
-            response.setStatus(HttpServletResponse.SC_TOO_MANY_REQUESTS);
-            response.getWriter().write("{\"error\":\"Rate limit exceeded. Try again later.\"}");
+            // ✅ Usar código 429 directamente
+            response.setStatus(429); // Too Many Requests
             response.setContentType("application/json");
+            response.getWriter().write("{\"error\":\"Rate limit exceeded. Try again later.\"}");
             return;
         }
         
