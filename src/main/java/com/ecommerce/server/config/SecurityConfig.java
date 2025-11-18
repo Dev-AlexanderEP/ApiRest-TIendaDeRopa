@@ -23,14 +23,14 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -69,35 +69,21 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfig = new CorsConfiguration();
         
-        // Orígenes permitidos
-        corsConfig.setAllowedOrigins(Arrays.asList(
-            "https://mixmatch.zapto.org",
-            "https://mixmatch.duckdns.org",
-            "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
-            "http://localhost:5174",
-            "http://localhost:5173",
-            "http://localhost:4200"
-        ));
+        corsConfig.setAllowedOriginPatterns(Arrays.asList("*")); // Cambio importante
         
-        // Métodos HTTP permitidos
         corsConfig.setAllowedMethods(Arrays.asList(
             "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
         ));
         
-        // Headers permitidos
         corsConfig.setAllowedHeaders(Arrays.asList("*"));
         
-        // Headers expuestos (importante para JWT)
         corsConfig.setExposedHeaders(Arrays.asList(
             "Authorization",
             "Content-Type",
             "X-Total-Count"
         ));
         
-        // Permitir credenciales (cookies, authorization headers)
         corsConfig.setAllowCredentials(true);
-        
-        // Cache de preflight (1 hora)
         corsConfig.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -106,35 +92,57 @@ public class SecurityConfig {
     }
 
     @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("roles");
+        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+
+        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        return jwtAuthenticationConverter;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // Rutas completamente públicas (sin autenticación)
+                        // Rutas completamente públicas
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/token", "/token/**").permitAll()
                         .requestMatchers("/google-login").permitAll()
                         .requestMatchers("/api/v1/usuarios/create").permitAll()
                         .requestMatchers("/api/v1/enviar-codigo-verificacion").permitAll()
                         .requestMatchers("/api/v1/verificar-codigo").permitAll()
                         
-                        // Endpoints de lectura públicos (si aplica)
+                        // Endpoints públicos de lectura
                         .requestMatchers("/api/v1/prendas/**").permitAll()
+                        .requestMatchers("/api/v1/prenda-tallas/**").permitAll()
+                        .requestMatchers("/api/v1/prenda-marcas/**").permitAll()
+                        .requestMatchers("/api/v1/prenda-precios/**").permitAll()
                         .requestMatchers("/api/v1/categorias/**").permitAll()
                         .requestMatchers("/api/v1/marcas/**").permitAll()
                         .requestMatchers("/api/v1/generos/**").permitAll()
                         .requestMatchers("/api/v1/imagenes/**").permitAll()
+                        .requestMatchers("/api/v1/tallas/**").permitAll()
+                        .requestMatchers("/api/v1/proveedores/**").permitAll()
                         
-                        // Resto de la API requiere autenticación
-                        .requestMatchers("/api/v1/**").authenticated()
+                        // Resto requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new SecurityHeadersFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class)
+                .oauth2ResourceServer(oauth2 -> oauth2
+                    .jwt(jwt -> jwt
+                        .decoder(jwtDecoder())
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                    )
+                )
+                // IMPORTANTE: Comentar filtros personalizados temporalmente
+                // .addFilterBefore(new SecurityHeadersFilter(), UsernamePasswordAuthenticationFilter.class)
+                // .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
+                // .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }
