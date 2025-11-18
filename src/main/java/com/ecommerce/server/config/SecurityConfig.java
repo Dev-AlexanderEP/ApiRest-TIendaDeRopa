@@ -25,7 +25,11 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -47,46 +51,87 @@ public class SecurityConfig {
         return new ProviderManager(authProvider);
     }
 
-    // Decodificar y validar tokens JWT entrantes (usan la clave publica)
     @Bean
     JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withPublicKey(rsaKeysConfig.getPublicKey()).build();
     }
 
-    // Genera y firma los tokens JWT salientes (Clave private y publica)
     @Bean
     JwtEncoder jwtEncoder() {
-        JWK jwk = new RSAKey.Builder(rsaKeysConfig.getPublicKey()).privateKey(rsaKeysConfig.getPrivateKey()).build();
+        JWK jwk = new RSAKey.Builder(rsaKeysConfig.getPublicKey())
+                .privateKey(rsaKeysConfig.getPrivateKey())
+                .build();
         JWKSource<SecurityContext> jwkSource = new ImmutableJWKSet<>(new JWKSet(jwk));
         return new NimbusJwtEncoder(jwkSource);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfig = new CorsConfiguration();
+        
+        // Orígenes permitidos
+        corsConfig.setAllowedOrigins(Arrays.asList(
+            "https://mixmatch.zapto.org",
+            "https://mixmatch.duckdns.org",
+            "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
+            "http://localhost:5174",
+            "http://localhost:5173",
+            "http://localhost:4200"
+        ));
+        
+        // Métodos HTTP permitidos
+        corsConfig.setAllowedMethods(Arrays.asList(
+            "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
+        ));
+        
+        // Headers permitidos
+        corsConfig.setAllowedHeaders(Arrays.asList("*"));
+        
+        // Headers expuestos (importante para JWT)
+        corsConfig.setExposedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "X-Total-Count"
+        ));
+        
+        // Permitir credenciales (cookies, authorization headers)
+        corsConfig.setAllowCredentials(true);
+        
+        // Cache de preflight (1 hora)
+        corsConfig.setMaxAge(3600L);
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+        return source;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(request -> {
-                    var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                    corsConfig.setAllowedOrigins(List.of(
-                            "https://sv-02udg1brnilz4phvect8.cloud.elastika.pe",
-                            "http://localhost:5174",
-                            "http://localhost:5173",
-                            "https://mixmatch.duckdns.org"
-                    ));
-                    corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                    corsConfig.setAllowedHeaders(List.of("*"));
-                    corsConfig.setAllowCredentials(true);
-                    return corsConfig;
-                }))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        // IMPORTANTE: Orden específico - más específico primero
+                        // Rutas completamente públicas (sin autenticación)
                         .requestMatchers("/uploads/**").permitAll()
-                        .requestMatchers("/token/**", "/google-login", "/api/v1/usuarios/create","/api/v1/enviar-codigo-verificacion", "/api/v1/verificar-codigo").permitAll()
+                        .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/token", "/token/**").permitAll()
+                        .requestMatchers("/google-login").permitAll()
+                        .requestMatchers("/api/v1/usuarios/create").permitAll()
+                        .requestMatchers("/api/v1/enviar-codigo-verificacion").permitAll()
+                        .requestMatchers("/api/v1/verificar-codigo").permitAll()
+                        
+                        // Endpoints de lectura públicos (si aplica)
+                        .requestMatchers("/api/v1/prendas/**").permitAll()
+                        .requestMatchers("/api/v1/categorias/**").permitAll()
+                        .requestMatchers("/api/v1/marcas/**").permitAll()
+                        .requestMatchers("/api/v1/generos/**").permitAll()
+                        .requestMatchers("/api/v1/imagenes/**").permitAll()
+                        
+                        // Resto de la API requiere autenticación
                         .requestMatchers("/api/v1/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                // Orden correcto de filtros: ANTES de UsernamePasswordAuthenticationFilter
                 .addFilterBefore(new SecurityHeadersFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new RateLimitFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtDecoder()), UsernamePasswordAuthenticationFilter.class)

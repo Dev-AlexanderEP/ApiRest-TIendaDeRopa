@@ -23,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // Rutas que NO requieren autenticación
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
-            "/token/",
+            "/token",
             "/google-login",
             "/uploads/",
             "/api/v1/usuarios/create",
