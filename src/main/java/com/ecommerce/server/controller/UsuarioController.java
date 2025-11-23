@@ -43,7 +43,8 @@ public class UsuarioController {
     @Autowired
     private UsuarioDao usuarioDao;
 
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    // ✅ Ahora busca roles ADMIN/USER (Spring añade ROLE_ internamente)
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @GetMapping("/buscar")
     public ResponseEntity<?> buscarUsuarios(
             @RequestParam(required = false) Long id,
@@ -57,14 +58,14 @@ public class UsuarioController {
         return msg.Get(usuarios);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     @GetMapping
     public ResponseEntity<?> showAllUsuarios(@RequestParam(defaultValue = "1") int pageNo) {
         PageResult<UsuarioResponse> getList = usuarioService.getUsuarios(pageNo);
         return msg.Get(getList);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<?> showAdminById(@PathVariable Long id) {
         Usuario usuario = usuarioService.getUsuario(id);
@@ -86,9 +87,10 @@ public class UsuarioController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody @Validated UpdatedUsuarioWebRequest updatedUsuarioWebRequest) {
+    public ResponseEntity<?> update(@PathVariable("id") Long id,
+                                    @RequestBody @Validated UpdatedUsuarioWebRequest updatedUsuarioWebRequest) {
         try {
             UpdateUsuarioRequest req = UpdateUsuarioRequest.from(updatedUsuarioWebRequest, id);
             Usuario usuarioUpdate = usuarioService.update(req);
@@ -100,7 +102,7 @@ public class UsuarioController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         try {
@@ -111,14 +113,14 @@ public class UsuarioController {
         }
     }
 
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/resetear-contrasenia")
     public ResponseEntity<?> resetPassword(@RequestBody ResetPass req) {
-        System.out.println("=== DEBUG /resetar-contrasenia ===");
+        System.out.println("=== DEBUG /resetear-contrasenia ===");
         System.out.println("Email recibido: " + req.email());
         System.out.println("Nueva contraseña: " + req.newPassword());
         System.out.println("Código recibido: " + req.code());
-//
+
         Usuario usuario = usuarioDao.findByEmail(req.email())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con email: " + req.email()));
 
@@ -132,22 +134,20 @@ public class UsuarioController {
         );
         System.out.println("Usuario encontrado en BD: " + usuario.getEmail());
 
-//         Aquí deberías validar el código de verificación con ForgotCodeService
-//         De momento asumido como válido
+        // Aquí deberías validar el código de verificación con ForgotCodeService (simulado OK)
         System.out.println("Validando código (simulado OK)");
 
-//         Actualizar la contraseña
+        // Actualizar la contraseña
         usuarioService.update(userRequest);
         System.out.println("Contraseña actualizada y guardada correctamente");
 
         return ResponseEntity.ok(new ResetPass("req.email()", "Password updated successfully", "req.code()"));
     }
 
-
-    // Este es un DTO simple para la solicitud de restablecimiento de contraseña No deberia ir aqui
+    // DTO para la solicitud de restablecimiento de contraseña
     public record ResetPass(
             String email,
             String newPassword,
             String code
-    ){}
+    ) {}
 }

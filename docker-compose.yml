@@ -42,6 +42,8 @@ services:
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
       SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+    - ./uploads:/app/uploads  # Mapea carpeta del host a contenedor
 
     depends_on:
       db:

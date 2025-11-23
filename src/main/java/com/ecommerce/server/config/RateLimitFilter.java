@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class RateLimitFilter extends OncePerRequestFilter {
 
     private final ConcurrentHashMap<String, Integer> requestCounts = new ConcurrentHashMap<>();
-    private static final int MAX_REQUESTS_PER_MINUTE = 100;
+    private static final int MAX_REQUESTS_PER_MINUTE = 100000;
     
     // Rutas públicas que NO tienen rate limiting estricto
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
